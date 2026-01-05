@@ -6,6 +6,7 @@
 - Utils: Metric Calculation, Division Assignment (Force Upper Fix)
 - Formatters: Final Output Standardization
 - Verification: Smart Column Injection (Cleaned Left of Raw)
+- Safety: Auto-Sanitize Column Headers & Smart Alias Mapping (New!)
 """
 
 import pandas as pd
@@ -14,6 +15,44 @@ import logging
 import re
 from typing import Tuple
 from . import config
+
+# =========================================================
+# 0. [NEW] 컬럼명 위생 처리 (줄바꿈/따옴표 제거)
+# =========================================================
+def sanitize_column_headers(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    1. 줄바꿈(\n) -> 공백 변환
+    2. 따옴표(") 제거
+    3. 다중 공백('  ') -> 단일 공백(' ') 표준화 (핵심!)
+    4. 중복 컬럼 자동 제거 (먼저 나온 정상 컬럼 유지)
+    """
+    
+    # 1. 모든 컬럼을 문자열로 변환
+    new_cols = df.columns.astype(str)
+
+    new_cols = new_cols.str.replace('\ufeff', '', regex=False)
+    
+    # 2. 줄바꿈과 캐리지 리턴을 공백으로 변경 (Regex 사용)
+    new_cols = new_cols.str.replace(r'[\r\n]+', ' ', regex=True)
+    
+    # 3. 따옴표 제거
+    new_cols = new_cols.str.replace('"', '', regex=False)
+    new_cols = new_cols.str.replace("'", '', regex=False)
+    
+    # 4. [핵심] 공백이 2개 이상인 곳을 1개로 압축 (Normalization)
+    new_cols = new_cols.str.replace(r'\s+', ' ', regex=True)
+    
+    # 5. 양쪽 공백 제거
+    new_cols = new_cols.str.strip()
+    
+    # 6. 컬럼명 적용
+    df.columns = new_cols
+    
+    # 7. [핵심] 이름이 같아진 중복 컬럼 제거 (앞에 있는 정상 데이터 우선)
+    # 예: 원본 'Media Spend (USD)'와 청소된 'Media Spend (USD)'가 충돌하면 하나만 남김
+    df = df.loc[:, ~df.columns.duplicated()]
+    
+    return df
 
 # =========================================================
 # 1. 정규식 패턴 전역 컴파일
@@ -43,6 +82,9 @@ def fast_normalize_text(series: pd.Series) -> pd.Series:
 # (A) MX & Media 파이프라인
 # =========================================================
 def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols: dict, is_media: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    # ⭐️ [Safety] 로직 시작 전 컬럼명 청소
+    df_raw = sanitize_column_headers(df_raw)
+
     raw_cols = map_cols['raw_cols'] 
     std_cols = map_cols['std_cols'] 
     key_col = map_cols['key']
@@ -199,6 +241,9 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
 # (B) CE 파이프라인 (⭐️ Bespoke Safety Fix Applied)
 # =========================================================
 def run_ce_product_cleansing(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols: dict) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    # ⭐️ [Safety] 로직 시작 전 컬럼명 청소
+    df_raw = sanitize_column_headers(df_raw)
+
     raw_cols = map_cols['raw_cols'] 
     std_cols = map_cols['std_cols'] 
     normalize_cols = map_cols.get('normalize_cols', raw_cols)
@@ -363,24 +408,57 @@ def assign_ce_division(df_cleaned: pd.DataFrame, df_raw: pd.DataFrame, div_rules
         df_final.loc[mask, 'BU'] = div_name
             
     # 모호한 카테고리는 Raw BU 유지 (이미 대문자화 되어 있음)
-    # mask_ambiguous = cat_lower.isin([c.lower() for c in ambiguous_cats])
-    # ... 1번에서 이미 원본을 대문자로 박았기 때문에 별도 처리 불필요
+
         
     return df_final
 
 def process_metric_columns(df: pd.DataFrame) -> pd.DataFrame:
-    logging.info(f"  -> (Metrics) 수치 데이터 표준화 ('-' -> 0) 및 CPC 재계산...")
+    logging.info(f"   -> (Metrics) 컬럼명 표준화 및 수치 처리...")
+    
+    # 1. 일단 컬럼명 위생 처리 (줄바꿈 제거)
+    df = sanitize_column_headers(df)
+
+    # 2. ⭐️ [Safety Map] 변종 이름들을 표준 이름으로 '납치'해옵니다.
+    # 왼쪽(변종)이 발견되면 오른쪽(표준)으로 즉시 바꿉니다.
+    rename_map = {
+        # Revenue 관련 변종들
+        'Revenue (USD)': 'Revenue',
+        'Revenue(USD)': 'Revenue',
+        'Total Revenue': 'Revenue',
+        'Rev.': 'Revenue',
+        
+        # Spend 관련 변종들
+        'Media Spend (USD)': 'Media Spend (USD)', # 이미 표준이지만 명시
+        'Spend': 'Media Spend (USD)',
+        'Cost': 'Media Spend (USD)',
+        
+        # 기타 지표
+        'Orders (Count)': 'Orders',
+        'App Installs': 'App Install',
+        'Installs': 'App Install',
+        'App Install (Count)': 'App Install'
+    }
+    
+    # 실제 존재하는 컬럼만 골라서 변경 (에러 방지)
+    actual_rename = {k: v for k, v in rename_map.items() if k in df.columns}
+    if actual_rename:
+        logging.info(f"      🔧 컬럼명 정규화 적용: {actual_rename}")
+        df.rename(columns=actual_rename, inplace=True)
+
+    # 3. 수치 변환 로직
     target_metrics = ['Impressions', 'Clicks', 'Media Spend (USD)', 'Media Spend', 'Orders', 'Revenue', 'App Install']
     for col in target_metrics:
         if col in df.columns:
             s = df[col].astype(str).str.strip().str.replace(',', '')
-            s = s.replace(['-', '–', '—'], '0')
+            s = s.replace(['-', '–', '—'], '0') # 대시 기호 처리
             df[col] = pd.to_numeric(s, errors='coerce').fillna(0)
             
+    # 4. CPC 재계산
     cost_col = next((c for c in ['Media Spend (USD)', 'Media Spend'] if c in df.columns), None)
     if cost_col and 'Clicks' in df.columns:
         df['CPC'] = np.where(df['Clicks'] > 0, df[cost_col] / df['Clicks'], 0)
         df['CPC'] = df['CPC'].replace([np.inf, -np.inf], 0).fillna(0)
+        
     return df
 
 # =========================================================

@@ -16,7 +16,7 @@ def load_csv_safely(file_path: Union[str, Path], header=0) -> Optional[pd.DataFr
         logging.error(f"❌ 파일이 존재하지 않습니다: {path_obj}")
         return None
 
-    encodings = ['utf-8', 'utf-8-sig', 'cp949']
+    encodings = ['utf-8-sig', 'cp949']
     
     for enc in encodings:
         try:

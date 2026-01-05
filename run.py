@@ -28,7 +28,8 @@ try:
         process_metric_columns,    # [Step 3] 수치표준화 & CPC
         format_mx_data,            # [MX] 최종 포맷터 (Master용)
         format_ce_data,            # [CE] 최종 포맷터 (Master용)
-        insert_cleaned_left_of_raw # [NEW] 원본 컬럼 왼쪽에 정제 데이터 삽입
+        insert_cleaned_left_of_raw,# 원본 컬럼 왼쪽에 정제 데이터 삽입
+        sanitize_column_headers 
     )
     from src.reporting import create_change_summary, save_to_csv_separated, save_unmapped_reports
 
@@ -100,6 +101,8 @@ def main_workflow():
                 if df_raw is None: 
                     logging.error(f"   ❌ 로드 실패: {file_name}")
                     continue
+
+                df_raw = sanitize_column_headers(df_raw)
 
                 # (B) 기초 전처리
                 # 1. Subsidiary 공백 제거

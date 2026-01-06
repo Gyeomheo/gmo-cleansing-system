@@ -11,6 +11,7 @@ OUTPUT_DIR = BASE_DIR / "2_Output"
 CONFIG_DIR = BASE_DIR / "3_Config"
 BACKUP_DIR = OUTPUT_DIR / "Backup"
 
+# 폴더 자동 생성
 INPUT_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -36,7 +37,17 @@ MASTER_FILES = {
 }
 
 # =========================================================
-# 4. 컬럼 매핑 설정 (Column Mapping)
+# 4. [필수] 코드 호환용 상수 (Magic Strings)
+# =========================================================
+COL_BU = 'BU'
+COL_SUB = 'Subsidiary'
+COL_DATE = 'Date'
+
+# 삭제할 키워드 (소문자 기준)
+IGNORE_KEYWORDS = ['smartphones']
+
+# =========================================================
+# 5. 컬럼 매핑 설정 (Column Mapping)
 # =========================================================
 # (1) Media Mapping
 MEDIA_COLS_MAP = {
@@ -50,14 +61,16 @@ MEDIA_COLS_MAP = {
 PRODUCT_COLS_MAP_MX = {
     'raw_cols': ['Product Category', 'Product Series', 'Products'],
     'std_cols': ['A_Standard', 'B_Standard', 'C_Standard'],
-    'key': 'C_Key'
+    'key': 'C_Key',
+    'normalize_cols': ['Product Category', 'Product Series', 'Products']
 }
 
 # (3) Product Mapping (CE)
 PRODUCT_COLS_MAP_CE = {
     'raw_cols': ['Product Category', 'Product Series', 'Products'],
     'std_cols': ['A_Standard', 'B_Standard', 'C_Standard'],
-    'key': 'A_Key'
+    'key': 'A_Key',
+    'normalize_cols': ['Product Category', 'Product Series']
 }
 
 # 리포트용 헤더
@@ -66,7 +79,7 @@ MEDIA_COLS = ['Media Type 1', 'Media Type 2', 'Media Platform']
 CE_PRODUCT_COLS = ['Product Category', 'Product Series', 'Products']
 
 # =========================================================
-# 5. 비즈니스 로직 설정
+# 6. 비즈니스 로직 설정
 # =========================================================
 DIV_RULES = {
     "VD": ["tv", "sound device", "audio", "av", "visual display", "monitor", "smart monitor", "projector"],
@@ -77,7 +90,7 @@ DIV_RULES = {
 AMBIGUOUS_CATS = ["memory", "storage", "ssd", "display", "b2b", "others"]
 
 # =========================================================
-# 6. [최종 출력 스펙] 마스터 DB용 컬럼 순서
+# 7. [최종 출력 스펙] 마스터 DB용 컬럼 순서 (User Defined)
 # =========================================================
 # [MX]
 MX_OUTPUT_COLS = [
@@ -106,7 +119,6 @@ CE_OUTPUT_COLS = [
 ]
 
 # =========================================================
-# 7. 시스템 설정 (System Config)
+# 8. 시스템 설정 (System Config)
 # =========================================================
-# ⭐️ [MISSING FIX] 엑셀 저장 엔진 설정
 WRITE_ENGINE = 'openpyxl'

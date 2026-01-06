@@ -1,12 +1,12 @@
 """
-[Pipeline Logic - Real Final Complete]
-- Core: Regex Pre-compilation, Vectorized Normalization
-- MX: Priority Scoring System, Multi-Pattern Rescue
+[Pipeline Logic - Architect Refactored Version]
+- Core: Regex Optimization, Full Vectorized Normalization (No Loops)
+- MX: Priority Scoring System (Visualized), Multi-Pattern Rescue
 - CE: Unique Combination Optimization (with Bespoke Safety Fix)
 - Utils: Metric Calculation, Division Assignment (Force Upper Fix)
 - Formatters: Final Output Standardization
-- Verification: Smart Column Injection (Cleaned Left of Raw)
-- Safety: Auto-Sanitize Column Headers & Smart Alias Mapping (New!)
+- Verification: Smart Column Injection
+- Safety: Auto-Sanitize Column Headers & Smart Alias Mapping
 """
 
 import pandas as pd
@@ -17,45 +17,31 @@ from typing import Tuple
 from . import config
 
 # =========================================================
-# 0. [NEW] 컬럼명 위생 처리 (줄바꿈/따옴표 제거)
+# 0. [Optimized] 컬럼명 위생 처리 (Vectorized)
 # =========================================================
 def sanitize_column_headers(df: pd.DataFrame) -> pd.DataFrame:
     """
-    1. 줄바꿈(\n) -> 공백 변환
-    2. 따옴표(") 제거
-    3. 다중 공백('  ') -> 단일 공백(' ') 표준화 (핵심!)
-    4. 중복 컬럼 자동 제거 (먼저 나온 정상 컬럼 유지)
+    [성능 개선] 정규식 호출 횟수 최소화
+    1. BOM, 줄바꿈, 따옴표, 연속 공백을 최적화된 체인으로 처리
+    2. 중복 컬럼 자동 제거 (First-Win)
     """
+    # 1. 문자열 변환 및 BOM 제거
+    new_cols = df.columns.astype(str).str.replace('\ufeff', '', regex=False)
     
-    # 1. 모든 컬럼을 문자열로 변환
-    new_cols = df.columns.astype(str)
-
-    new_cols = new_cols.str.replace('\ufeff', '', regex=False)
+    # 2. [Refactored] 줄바꿈/따옴표/연속공백 제거 (Chain)
+    # r'[\r\n]+': 줄바꿈, r'[\'"]': 따옴표
+    new_cols = new_cols.str.replace(r'[\r\n]+', ' ', regex=True)\
+                       .str.replace(r'[\'"]', '', regex=True)\
+                       .str.replace(r'\s+', ' ', regex=True)\
+                       .str.strip()
     
-    # 2. 줄바꿈과 캐리지 리턴을 공백으로 변경 (Regex 사용)
-    new_cols = new_cols.str.replace(r'[\r\n]+', ' ', regex=True)
-    
-    # 3. 따옴표 제거
-    new_cols = new_cols.str.replace('"', '', regex=False)
-    new_cols = new_cols.str.replace("'", '', regex=False)
-    
-    # 4. [핵심] 공백이 2개 이상인 곳을 1개로 압축 (Normalization)
-    new_cols = new_cols.str.replace(r'\s+', ' ', regex=True)
-    
-    # 5. 양쪽 공백 제거
-    new_cols = new_cols.str.strip()
-    
-    # 6. 컬럼명 적용
     df.columns = new_cols
     
-    # 7. [핵심] 이름이 같아진 중복 컬럼 제거 (앞에 있는 정상 데이터 우선)
-    # 예: 원본 'Media Spend (USD)'와 청소된 'Media Spend (USD)'가 충돌하면 하나만 남김
-    df = df.loc[:, ~df.columns.duplicated()]
-    
-    return df
+    # 3. 중복 컬럼 제거 (앞에 있는 정상 데이터 우선)
+    return df.loc[:, ~df.columns.duplicated()]
 
 # =========================================================
-# 1. 정규식 패턴 전역 컴파일
+# 1. [Optimized] 정규식 패턴 및 텍스트 정규화
 # =========================================================
 P_CAMEL_1 = re.compile(r'([a-z])([A-Z])')
 P_CAMEL_2 = re.compile(r'([A-Z])([A-Z][a-z])')
@@ -63,20 +49,23 @@ P_DIGIT_CHAR = re.compile(r'(\d+)([a-zA-Z]+)')
 
 def fast_normalize_text(series: pd.Series) -> pd.Series:
     """
-    [성능 최적화] 데이터 정규화 (CamelCase 분리 및 Title Case 적용)
+    [Architect Note] map() 함수 제거 및 마스킹 기법 적용 (C-Level Speed)
     """
+    # 1. 결측치 및 공백 처리
     s = series.fillna('').astype(str).str.strip()
+    
+    # 2. Regex 벡터 연산
     s = s.str.replace(P_CAMEL_1, r'\1 \2', regex=True)
     s = s.str.replace(P_CAMEL_2, r'\1 \2', regex=True)
     s = s.str.replace(P_DIGIT_CHAR, r'\1 \2', regex=True)
     
-    def _case_adjust(val):
-        if not val: return ''
-        if val.islower() or val.isupper():
-            return val.title()
-        return val
+    # 3. [Refactored] Title Case 최적화 (Loop 제거)
+    # 전체가 대문자이거나 소문자인 경우만 찾아서 변경 (이미 섞여있으면 유지)
+    mask_fix = s.str.islower() | s.str.isupper()
+    if mask_fix.any():
+        s.loc[mask_fix] = s.loc[mask_fix].str.title()
     
-    return s.map(_case_adjust)
+    return s
 
 # =========================================================
 # (A) MX & Media 파이프라인
@@ -101,12 +90,14 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
     df_proc[B_norm] = df_proc[B_raw]
     df_proc[C_norm] = df_proc[C_raw]
 
+    # 정규화 적용
     for col, norm_col in zip(raw_cols, [A_norm, B_norm, C_norm]):
         if col in normalize_cols:
             df_proc[norm_col] = fast_normalize_text(df_proc[norm_col])
         else:
             df_proc[norm_col] = df_proc[norm_col].fillna('').astype(str).str.strip()
             
+    # Join Key 설정
     if is_media:
         df_proc['_v_key'] = df_proc[C_norm] 
         mask_affiliate = (df_proc[A_norm] == 'Affiliate')
@@ -115,9 +106,23 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
     else:
         merge_left_key = C_norm 
 
+    # 매핑 테이블 조인
     df_merged = pd.merge(df_proc, df_map, left_on=merge_left_key, right_on=key_col, how='left')
     
-    # Scoring Logic
+    # ---------------------------------------------------------
+    # 🧠 Priority Scoring System (Visualized)
+    # ---------------------------------------------------------
+    #
+    #  [Logic Flow]                                         [Score]
+    #  1. Cat + Ser + Prd 모두 일치 (Perfect Match)  --------> 4
+    #  2. Cat + Ser 일치 (Standard Match)            --------> 3
+    #  3. Ser 일치 (Partial/Loose Match)             --------> 2
+    #  4. Key는 존재하나 매칭 실패 (Exist)            --------> 1
+    #  5. 매핑 테이블에 Key 없음 (Fail)               --------> 0 (Drop)
+    #
+    #  * Note: 'NONE'은 해당 레벨 검증 Skip, 'ANY'는 값 존재 시 Pass
+    # ---------------------------------------------------------
+
     norm_a_lower = df_merged[A_norm].str.lower()
     std_a_lower = df_merged[A_std].str.lower()
     norm_b_lower = df_merged[B_norm].str.lower()
@@ -125,6 +130,7 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
     norm_c_lower = df_merged[C_norm].str.lower()
     std_c_lower = df_merged[C_std].str.lower()
 
+    # 조건 벡터 계산
     a_match = ((df_merged[A_std] == 'NONE') | ((df_merged[A_std] == 'ANY') & (df_merged[A_norm] != '')) | (norm_a_lower == std_a_lower))
     b_match = ((df_merged[B_std] == 'NONE') | ((df_merged[B_std] == 'ANY') & (df_merged[B_norm] != '')) | (norm_b_lower == std_b_lower))
     c_match = ((df_merged[C_std] == 'NONE') | ((df_merged[C_std] == 'ANY') & (df_merged[C_norm] != '')) | (norm_c_lower == std_c_lower))
@@ -135,18 +141,21 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
         b_match = ((df_merged[B_std] == 'NONE') & is_aff) | b_match
         c_match = ((df_merged[C_std] == 'NONE') & is_aff) | c_match
 
+    # 우선순위 점수 할당 (np.select 사용)
     conditions = [
-        a_match & b_match & c_match, 
-        a_match & b_match,           
-        b_match,                    
-        df_merged[key_col].notna()   
+        a_match & b_match & c_match,  # Priority 4
+        a_match & b_match,            # Priority 3
+        b_match,                      # Priority 2
+        df_merged[key_col].notna()    # Priority 1
     ]
     scores = [4, 3, 2, 1] 
     df_merged['priority'] = np.select(conditions, scores, default=0)
 
+    # 중복 제거 (점수 높은 순 -> 원본 인덱스 순)
     df_merged.sort_values(by=['original_index', 'priority'], ascending=[True, False], inplace=True)
     df_final_rows = df_merged.drop_duplicates(subset=['original_index'], keep='first')
     
+    # 결과 적용
     df_final = df_final_rows.copy()
     A_cln, B_cln, C_cln = f"{A_raw}_cleaned", f"{B_raw}_cleaned", f"{C_raw}_cleaned"
     
@@ -154,55 +163,76 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
     df_final[B_cln] = df_final[B_std]
     df_final[C_cln] = df_final[C_std]
     
+    # Affiliate 예외 처리
     if is_media:
         mask_aff = (df_final[A_std] == 'Affiliate')
         df_final.loc[mask_aff, C_cln] = df_final.loc[mask_aff, C_raw]
+        
+        # 실패 건에 대한 Fallback
         fail_mask = (df_final['priority'] == 0)
         df_final.loc[fail_mask, [A_cln, B_cln, C_cln]] = df_final.loc[fail_mask, [A_raw, B_raw, C_raw]].values
+        
         mask_aff_fail = (df_final[A_norm] == 'Affiliate') & fail_mask
         if mask_aff_fail.any():
             df_final.loc[mask_aff_fail, B_cln] = 'Others'
             df_final.loc[mask_aff_fail, C_cln] = df_final.loc[mask_aff_fail, C_raw]
 
-    # MX Rescue Logic (Multi)
+    # MX Rescue Logic (Multi 패턴 구조)
     if not is_media: 
         mask_multi = (df_final[A_cln] == 'Multi') | (df_final[A_cln].isna())
         if mask_multi.any():
             logging.info(f"     -> (Optimization) 'Multi' {mask_multi.sum()}건 구제 시도...")
+            
+            # Rescue Map 구축 (Closure 방지를 위해 로컬 변수 사용)
             fallback_map = {}
             series_reverse_map = {}
+            
+            # 매핑 테이블 스캔
             for row in df_map[[A_std, B_std]].itertuples(index=False):
                 a_val, b_val = row[0], row[1]
                 if pd.isna(a_val) or pd.isna(b_val): continue
                 s_low = str(b_val).lower().strip()
+                
+                # Series 역매핑
                 if s_low not in ['multi', 'others', 'other', 'nan', 'none', '']:
                     series_reverse_map[s_low] = (a_val, b_val)
+                
+                # Category Fallback
                 cat_key = str(a_val).lower().strip()
                 if cat_key not in fallback_map: fallback_map[cat_key] = (a_val, 'Multi')
+                
+                # 'Other'가 포함된 경우 우선순위 조정
                 current_fb = fallback_map[cat_key][1]
                 if 'other' in s_low and 'other' not in str(current_fb).lower():
                     fallback_map[cat_key] = (a_val, b_val)
 
+            # 대상 데이터 준비
             target_data = df_final.loc[mask_multi, [A_norm, B_norm]].copy()
             target_data['cat_lower'] = target_data[A_norm].astype(str).str.lower().str.strip()
             target_data['ser_lower'] = target_data[B_norm].astype(str).str.lower().str.strip()
             
+            # 패턴 매칭
             unique_patterns = target_data[['cat_lower', 'ser_lower']].drop_duplicates()
             pattern_results = []
             
             for row in unique_patterns.itertuples(index=False):
                 c_low, s_low = row.cat_lower, row.ser_lower
                 res_a, res_b = None, None
+                
                 if s_low in series_reverse_map: res_a, res_b = series_reverse_map[s_low]
                 elif c_low in fallback_map: res_a, res_b = fallback_map[c_low]
                 elif c_low in series_reverse_map: res_a, res_b = series_reverse_map[c_low]
+                
                 if res_a: pattern_results.append({'cat_lower': c_low, 'ser_lower': s_low, 'A_new': res_a, 'B_new': res_b})
             
+            # 결과 병합 및 적용
             if pattern_results:
                 df_pattern_map = pd.DataFrame(pattern_results)
                 df_rescued = pd.merge(target_data.reset_index(), df_pattern_map, on=['cat_lower', 'ser_lower'], how='left')
+                
                 mask_success = df_rescued['A_new'].notna()
                 success_indices = df_rescued.loc[mask_success, 'index'].values
+                
                 df_final.loc[success_indices, A_cln] = df_rescued.loc[mask_success, 'A_new'].values
                 df_final.loc[success_indices, B_cln] = df_rescued.loc[mask_success, 'B_new'].values
                 df_final.loc[success_indices, C_cln] = df_rescued.loc[mask_success, 'B_new'].values
@@ -212,6 +242,7 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
     if fail_mask_final.any():
         df_final.loc[fail_mask_final, [A_cln, B_cln, C_cln]] = df_final.loc[fail_mask_final, [A_raw, B_raw, C_raw]].values
 
+    # 유효성 검증 (Valid Combination Check)
     valid_combinations = set((df_map[A_std] + "|" + df_map[B_std] + "|" + df_map[C_std]).unique())
     concat_raw = (df_proc[A_raw].fillna('') + "|" + df_proc[B_raw].fillna('') + "|" + df_proc[C_raw].fillna(''))
     is_already_valid = concat_raw.isin(valid_combinations)
@@ -221,6 +252,7 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
     if mask_valid_in_final.any():
         df_final.loc[mask_valid_in_final, [A_cln, B_cln, C_cln]] = df_final.loc[mask_valid_in_final, [A_raw, B_raw, C_raw]].values
 
+    # Unmapped Report 생성
     unmapped_key_source = merge_left_key if is_media else C_raw
     is_rescued = (df_final[A_cln] != 'Multi') & (df_final[A_cln].notna()) & (df_final['priority'] == 0)
     real_fail_mask = (df_final['priority'] == 0) & (~is_rescued) & (~mask_valid_in_final)
@@ -229,6 +261,7 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
     unmapped_values = df_proc[df_proc['original_index'].isin(failed_indices)][unmapped_key_source].unique()
     df_unmapped_report = pd.DataFrame(unmapped_values, columns=['Unmapped_Key'])
 
+    # 인덱스 복원 및 컬럼 정리
     df_final.set_index('original_index', inplace=True)
     df_final.sort_index(inplace=True)
     
@@ -271,9 +304,7 @@ def run_ce_product_cleansing(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_col
     seen_series_counts = {}  # ⭐️ [Safety] 시리즈 등장 횟수 카운트용
     COMMON_KEYWORDS = ['multi', 'others', 'other', 'nan', 'none', '']
     
-    # ---------------------------------------------------------
     # 1. Series Frequency Count (중복 방지용 사전 집계)
-    # ---------------------------------------------------------
     for cat in df_map[Std_Cat_Col].unique():
         valid_series = df_map.loc[df_map[Std_Cat_Col] == cat, Std_Ser_Col].unique()
         for s in valid_series:
@@ -281,9 +312,7 @@ def run_ce_product_cleansing(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_col
             if s_low not in COMMON_KEYWORDS:
                 seen_series_counts[s_low] = seen_series_counts.get(s_low, 0) + 1
 
-    # ---------------------------------------------------------
     # 2. Build Lookup Tables (중복 시리즈 제외)
-    # ---------------------------------------------------------
     for cat in df_map[Std_Cat_Col].unique():
         cat_key = str(cat).lower()
         valid_series = df_map.loc[df_map[Std_Cat_Col] == cat, Std_Ser_Col].unique()
@@ -390,14 +419,12 @@ def assign_ce_division(df_cleaned: pd.DataFrame, df_raw: pd.DataFrame, div_rules
     df_final = df_cleaned.copy()
 
     # 1. [FIX] Raw BU 값을 가져와서 무조건 대문자로 초기화
-    # 이렇게 하면 'da' -> 'DA', 'vd' -> 'VD'가 기본값으로 확정됩니다.
     if 'BU' in df_raw.columns:
         df_final['BU'] = df_raw['BU'].fillna('').astype(str).str.strip().str.upper()
     else:
         df_final['BU'] = 'MX' # BU 컬럼이 없으면 기본 MX
 
     # 2. Product Category 기반으로 BU 덮어쓰기 (Rule-based Override)
-    # 이미 1번에서 대문자로 깔려있으므로, 룰에 매칭되지 않는 녀석들도 자동으로 대문자가 유지됩니다.
     cat_col = next((c for c in df_final.columns if 'Product Category' in c and c.endswith('_cleaned')), None)
     if not cat_col: return df_final
     
@@ -407,51 +434,38 @@ def assign_ce_division(df_cleaned: pd.DataFrame, df_raw: pd.DataFrame, div_rules
         mask = cat_lower.isin([c.lower() for c in cat_list])
         df_final.loc[mask, 'BU'] = div_name
             
-    # 모호한 카테고리는 Raw BU 유지 (이미 대문자화 되어 있음)
-
-        
     return df_final
 
 def process_metric_columns(df: pd.DataFrame) -> pd.DataFrame:
     logging.info(f"   -> (Metrics) 컬럼명 표준화 및 수치 처리...")
     
-    # 1. 일단 컬럼명 위생 처리 (줄바꿈 제거)
+    # 1. 컬럼명 위생 처리
     df = sanitize_column_headers(df)
 
-    # 2. ⭐️ [Safety Map] 변종 이름들을 표준 이름으로 '납치'해옵니다.
-    # 왼쪽(변종)이 발견되면 오른쪽(표준)으로 즉시 바꿉니다.
+    # 2. ⭐️ [Safety Map] 변종 이름들을 표준 이름으로 정규화
     rename_map = {
-        # Revenue 관련 변종들
-        'Revenue (USD)': 'Revenue',
-        'Revenue(USD)': 'Revenue',
-        'Total Revenue': 'Revenue',
-        'Rev.': 'Revenue',
-        
-        # Spend 관련 변종들
-        'Media Spend (USD)': 'Media Spend (USD)', # 이미 표준이지만 명시
-        'Spend': 'Media Spend (USD)',
-        'Cost': 'Media Spend (USD)',
-        
-        # 기타 지표
-        'Orders (Count)': 'Orders',
-        'App Installs': 'App Install',
-        'Installs': 'App Install',
-        'App Install (Count)': 'App Install'
+        'Revenue (USD)': 'Revenue', 'Revenue(USD)': 'Revenue', 'Total Revenue': 'Revenue', 'Rev.': 'Revenue',
+        'Media Spend (USD)': 'Media Spend (USD)', 'Spend': 'Media Spend (USD)', 'Cost': 'Media Spend (USD)',
+        'Orders (Count)': 'Orders', 'App Installs': 'App Install', 'Installs': 'App Install', 'App Install (Count)': 'App Install'
     }
     
-    # 실제 존재하는 컬럼만 골라서 변경 (에러 방지)
     actual_rename = {k: v for k, v in rename_map.items() if k in df.columns}
     if actual_rename:
         logging.info(f"      🔧 컬럼명 정규화 적용: {actual_rename}")
         df.rename(columns=actual_rename, inplace=True)
 
-    # 3. 수치 변환 로직
+    # 3. 수치 변환 로직 (Vectorized)
     target_metrics = ['Impressions', 'Clicks', 'Media Spend (USD)', 'Media Spend', 'Orders', 'Revenue', 'App Install']
-    for col in target_metrics:
-        if col in df.columns:
-            s = df[col].astype(str).str.strip().str.replace(',', '')
-            s = s.replace(['-', '–', '—'], '0') # 대시 기호 처리
-            df[col] = pd.to_numeric(s, errors='coerce').fillna(0)
+    existing_metrics = [col for col in target_metrics if col in df.columns]
+    
+    if existing_metrics:
+        # 콤마, 대시 제거 등을 한 번에 처리
+        for col in existing_metrics:
+             # to_numeric으로 변환 (errors='coerce'로 문자열은 NaN 처리 후 0 채움)
+            df[col] = pd.to_numeric(
+                df[col].astype(str).str.replace(r'[,]', '', regex=True).replace(['-', '–', '—'], '0'),
+                errors='coerce'
+            ).fillna(0)
             
     # 4. CPC 재계산
     cost_col = next((c for c in ['Media Spend (USD)', 'Media Spend'] if c in df.columns), None)

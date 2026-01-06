@@ -82,12 +82,12 @@ CE_PRODUCT_COLS = ['Product Category', 'Product Series', 'Products']
 # 6. 비즈니스 로직 설정
 # =========================================================
 DIV_RULES = {
-    "VD": ["tv", "sound device", "audio", "av", "visual display", "monitor", "smart monitor", "projector"],
-    "DA": ["refrigerator", "fridge", "washing machine", "washer", "dryer", "laundry", "air conditioner", "ac", "vacuum", "cleaner", "oven", "cooking", "dishwasher", "air dresser"],
-    "MX": ["smartphone", "mobile", "tablet", "wearable", "watch", "buds", "galaxy", "accessory", "pc", "laptop", "notebook"]
+    "VD": ["Lifestyle TV", "Monitor","Sound device","TV"],
+    "DA": ["Air Dresser", "Air Purifier","Cooking", "Dishwasher", "Dryer", "Heating & Cooling", "Refrigerator", "Vacuum", "Washer", "Washer & Dryer"],
+    "MX": ["Hearables", "Multi", "PC","Smartphones","Tablets", "Wearables"]
 }
 
-AMBIGUOUS_CATS = ["memory", "storage", "ssd", "display", "b2b", "others"]
+AMBIGUOUS_CATS = ["Multi", "APS", ]
 
 # =========================================================
 # 7. [최종 출력 스펙] 마스터 DB용 컬럼 순서 (User Defined)

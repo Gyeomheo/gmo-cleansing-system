@@ -84,7 +84,7 @@ CE_PRODUCT_COLS = ['Product Category', 'Product Series', 'Products']
 DIV_RULES = {
     "VD": ["Lifestyle TV", "Monitor","Sound device","TV"],
     "DA": ["Air Dresser", "Air Purifier","Cooking", "Dishwasher", "Dryer", "Heating & Cooling", "Refrigerator", "Vacuum", "Washer", "Washer & Dryer"],
-    "MX": ["Hearables", "Multi", "PC","Smartphones","Tablets", "Wearables"]
+    "MX": ["Hearables", "PC","Smartphones","Tablets", "Wearables"]
 }
 
 AMBIGUOUS_CATS = ["Multi", "APS", ]

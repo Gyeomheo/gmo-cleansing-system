@@ -391,7 +391,7 @@ def process_subsidiary_column(df: pd.DataFrame, col_name: str = 'Subsidiary') ->
     return df
 
 def process_mindset_column(df, col_name='Mindset'):
-    logging.info(f"  -> (v20) Mindset 클렌징...")
+    logging.info("  -> (v20) Mindset 클렌징...")
     if col_name not in df.columns: return df
     df[col_name] = df[col_name].fillna('').astype(str)
     mask_cold = (df[col_name].str.strip().str.lower() == 'cold')
@@ -399,7 +399,7 @@ def process_mindset_column(df, col_name='Mindset'):
     return df
 
 def process_funding_column(df, col_name='Funding'):
-    logging.info(f"  -> (v21) Funding 클렌징...")
+    logging.info("  -> (v21) Funding 클렌징...")
     if col_name not in df.columns: return df
     temp_val = df[col_name].fillna('').astype(str).str.strip().str.lower()
     cond_gmo = (temp_val == 'gmo')
@@ -415,7 +415,7 @@ def assign_ce_division(df_cleaned: pd.DataFrame, df_raw: pd.DataFrame, div_rules
     BU(Division) 할당 로직.
     [중요] 입력 데이터의 BU(da, vd 등)를 무조건 대문자(DA, VD)로 변환한 후 시작합니다.
     """
-    logging.info(f"  -> (v41) BU(Division) 업데이트 및 대소문자 강제 보정...")
+    logging.info("  -> (v41) BU(Division) 업데이트 및 대소문자 강제 보정...")
     df_final = df_cleaned.copy()
 
     # 1. [FIX] Raw BU 값을 가져와서 무조건 대문자로 초기화
@@ -437,7 +437,7 @@ def assign_ce_division(df_cleaned: pd.DataFrame, df_raw: pd.DataFrame, div_rules
     return df_final
 
 def process_metric_columns(df: pd.DataFrame) -> pd.DataFrame:
-    logging.info(f"   -> (Metrics) 컬럼명 표준화 및 수치 처리...")
+    logging.info("   -> (Metrics) 컬럼명 표준화 및 수치 처리...")
     
     # 1. 컬럼명 위생 처리
     df = sanitize_column_headers(df)

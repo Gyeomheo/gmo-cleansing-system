@@ -1,6 +1,5 @@
 import pandas as pd
 import logging
-import sys
 import os
 
 # --- 로깅 설정 ---

@@ -7,7 +7,6 @@
 import pandas as pd
 import logging
 import shutil
-import numpy as np
 from datetime import datetime, timedelta
 from . import config
 

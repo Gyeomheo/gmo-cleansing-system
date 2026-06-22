@@ -18,6 +18,7 @@ try:
     from src.pipeline import (
         run_cleansing_pipeline, 
         run_ce_product_cleansing, 
+        fast_normalize_text,
         process_mindset_column, 
         process_funding_column, 
         assign_ce_division,
@@ -46,6 +47,55 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout)
     ]
 )
+
+
+def build_unmapped_product_rows(df_source: pd.DataFrame, unmapped_df: pd.DataFrame, key_source_col: str) -> pd.DataFrame:
+    """
+    unmapped 키 목록과 원본 제품 컬럼을 조합해,
+    C_Key 등록에 바로 사용할 4열 리포트를 생성한다.
+    """
+    output_cols = [
+        'Product_Key_Normalized',
+        'Product Category (Raw)',
+        'Product Series (Raw)',
+        'Products (Raw)'
+    ]
+    product_cols = ['Product Category', 'Product Series', 'Products']
+
+    if df_source is None or df_source.empty or unmapped_df is None or unmapped_df.empty:
+        return pd.DataFrame(columns=output_cols)
+
+    if key_source_col not in df_source.columns or 'Unmapped_Key' not in unmapped_df.columns:
+        return pd.DataFrame(columns=output_cols)
+
+    if any(col not in df_source.columns for col in product_cols):
+        return pd.DataFrame(columns=output_cols)
+
+    unmapped_keys = set(
+        unmapped_df['Unmapped_Key']
+        .fillna('')
+        .astype(str)
+        .str.strip()
+        .tolist()
+    )
+    unmapped_keys.discard('')
+    if not unmapped_keys:
+        return pd.DataFrame(columns=output_cols)
+
+    source_keys = df_source[key_source_col].fillna('').astype(str).str.strip()
+    mask_unmapped = source_keys.isin(unmapped_keys)
+    if not mask_unmapped.any():
+        return pd.DataFrame(columns=output_cols)
+
+    df_out = df_source.loc[mask_unmapped, product_cols].copy()
+    df_out['Product_Key_Normalized'] = fast_normalize_text(df_out['Products'])
+    df_out.rename(columns={
+        'Product Category': 'Product Category (Raw)',
+        'Product Series': 'Product Series (Raw)',
+        'Products': 'Products (Raw)'
+    }, inplace=True)
+    df_out = df_out[output_cols].drop_duplicates().reset_index(drop=True)
+    return df_out
 
 def main_workflow():
     logging.info("="*60)
@@ -78,7 +128,7 @@ def main_workflow():
         
         collected_mx_data = []
         collected_ce_data = []
-        total_unmapped_prod = set() 
+        total_unmapped_prod_rows = []
         total_unmapped_media = set()    
 
         # =========================================================
@@ -128,6 +178,7 @@ def main_workflow():
                     df_cleaned_step2, unmapped_prod = run_ce_product_cleansing(
                         df_cleaned_step1, df_map_ce, config.PRODUCT_COLS_MAP_CE
                     )
+                    unmapped_key_source_col = 'Product Category'
                     
                     df_cleaned_final = assign_ce_division(
                         df_cleaned_step2, df_raw_original, config.DIV_RULES, config.AMBIGUOUS_CATS      
@@ -153,6 +204,7 @@ def main_workflow():
                     df_cleaned_step2, unmapped_prod = run_cleansing_pipeline(
                         df_cleaned_step1, df_map_mx, config.PRODUCT_COLS_MAP_MX
                     )
+                    unmapped_key_source_col = 'Products'
                     df_cleaned_final = df_cleaned_step2.copy()
                     df_cleaned_final[config.COL_BU] = 'MX'
                     
@@ -162,8 +214,14 @@ def main_workflow():
                     df_for_master = format_mx_data(df_cleaned_final)
                     if not df_for_master.empty: collected_mx_data.append(df_for_master)
 
-                # 공통: 미매핑 키 업데이트
-                total_unmapped_prod.update(unmapped_prod['Unmapped_Key'].tolist())
+                # 공통: 미매핑 제품 리포트 업데이트 (정규화 Key + Raw 3열)
+                df_unmapped_prod_rows = build_unmapped_product_rows(
+                    df_source=df_cleaned_step2,
+                    unmapped_df=unmapped_prod,
+                    key_source_col=unmapped_key_source_col
+                )
+                if not df_unmapped_prod_rows.empty:
+                    total_unmapped_prod_rows.append(df_unmapped_prod_rows)
                 
                 # (D) 개별 파일 저장
                 df_save = insert_cleaned_left_of_raw(df_cleaned_final.copy())
@@ -196,6 +254,16 @@ def main_workflow():
         # 4. 종료 프로세스
         # =========================================================
         logging.info("\n💾 [최종 단계] 마스터 DB 동기화 및 리포트 생성")
+
+        if total_unmapped_prod_rows:
+            total_unmapped_prod = pd.concat(total_unmapped_prod_rows, ignore_index=True).drop_duplicates()
+        else:
+            total_unmapped_prod = pd.DataFrame(columns=[
+                'Product_Key_Normalized',
+                'Product Category (Raw)',
+                'Product Series (Raw)',
+                'Products (Raw)'
+            ])
 
         save_unmapped_reports(total_unmapped_prod, total_unmapped_media)
         

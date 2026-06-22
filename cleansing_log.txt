@@ -1,0 +1,136 @@
+2026-06-15 11:05:59,984 - INFO - ============================================================
+2026-06-15 11:05:59,985 - INFO -  🚀 GMO 데이터 자동화 시스템 (Integration Final Build) 가동
+2026-06-15 11:05:59,985 - INFO - ============================================================
+2026-06-15 11:05:59,986 - INFO - ⚙️ 매핑 테이블 로드 및 초기화 중...
+2026-06-15 11:06:02,039 - INFO - 'F_Key' 기준으로 JSON 구조 생성 중...
+2026-06-15 11:06:02,064 - INFO - ✅ JSON 캐시 생성 성공: media_mapping.json
+2026-06-15 11:06:02,295 - INFO - 'C_Key' 기준으로 JSON 구조 생성 중...
+2026-06-15 11:06:02,337 - INFO - ✅ JSON 캐시 생성 성공: product_mapping_MX.json
+2026-06-15 11:06:02,405 - INFO - 'A_Key' 기준으로 JSON 구조 생성 중...
+2026-06-15 11:06:02,412 - INFO - ✅ JSON 캐시 생성 성공: product_mapping_CE.json
+2026-06-15 11:06:02,414 - INFO - 'media_mapping.json' 캐시 파일 로드 중...
+2026-06-15 11:06:02,430 - INFO - 'media_mapping.json' 로드 완료. (총 95개 규칙)
+2026-06-15 11:06:02,433 - INFO - 'product_mapping_MX.json' 캐시 파일 로드 중...
+2026-06-15 11:06:02,446 - INFO - 'product_mapping_MX.json' 로드 완료. (총 541개 규칙)
+2026-06-15 11:06:02,463 - INFO - 'product_mapping_CE.json' 캐시 파일 로드 중...
+2026-06-15 11:06:02,474 - INFO - 'product_mapping_CE.json' 로드 완료. (총 47개 규칙)
+2026-06-15 11:06:02,477 - INFO - 
+📄 [파일 처리 1/7] SCIC+cE.csv
+2026-06-15 11:06:02,569 - INFO -   -> (v25) 'Date' 파싱 및 필터링...
+2026-06-15 11:06:02,606 - INFO -    -> (Metrics) 컬럼명 표준화 및 수치 처리...
+2026-06-15 11:06:02,610 - INFO -       🔧 컬럼명 정규화 적용: {'Revenue (USD)': 'Revenue', 'Media Spend (USD)': 'Media Spend (USD)'}
+2026-06-15 11:06:02,635 - INFO -   -> (Pipeline) 'Media Platform' 기준 클렌징 (Vectorized)...
+2026-06-15 11:06:02,743 - INFO -    -> 'BU' 컬럼 감지: CE 로직 적용
+2026-06-15 11:06:02,811 - INFO -   -> (v41) BU(Division) 업데이트 및 대소문자 강제 보정...
+2026-06-15 11:06:02,880 - INFO -    ✅ 개별 파일 저장 완료: cleaned_0105~_SCIC+cE
+2026-06-15 11:06:02,880 - INFO - 
+📄 [파일 처리 2/7] SEAU+CE+JAN.csv
+2026-06-15 11:06:02,904 - INFO -   -> (v25) 'Date' 파싱 및 필터링...
+2026-06-15 11:06:02,934 - INFO -    -> (Metrics) 컬럼명 표준화 및 수치 처리...
+2026-06-15 11:06:02,938 - INFO -       🔧 컬럼명 정규화 적용: {'Revenue (USD)': 'Revenue', 'Media Spend (USD)': 'Media Spend (USD)'}
+2026-06-15 11:06:02,969 - INFO -   -> (Pipeline) 'Media Platform' 기준 클렌징 (Vectorized)...
+2026-06-15 11:06:03,113 - INFO -    -> 'BU' 컬럼 감지: CE 로직 적용
+2026-06-15 11:06:03,189 - INFO -   -> (v41) BU(Division) 업데이트 및 대소문자 강제 보정...
+2026-06-15 11:06:03,288 - INFO -     📝 [Report] 변경 요약 저장됨: cleaned_0101~_SEAU+CE+JAN_Summary_Media.csv (유형: 1개)
+2026-06-15 11:06:03,288 - INFO -    ✅ 개별 파일 저장 완료: cleaned_0101~_SEAU+CE+JAN
+2026-06-15 11:06:03,288 - INFO - 
+📄 [파일 처리 3/7] SEAU_CE_JUNE.csv
+2026-06-15 11:06:03,312 - INFO -   -> (v25) 'Date' 파싱 및 필터링...
+2026-06-15 11:06:03,335 - INFO -    -> (Metrics) 컬럼명 표준화 및 수치 처리...
+2026-06-15 11:06:03,342 - INFO -       🔧 컬럼명 정규화 적용: {'Revenue (USD)': 'Revenue', 'Media Spend (USD)': 'Media Spend (USD)'}
+2026-06-15 11:06:03,370 - INFO -   -> (Pipeline) 'Media Platform' 기준 클렌징 (Vectorized)...
+2026-06-15 11:06:03,485 - INFO -    -> 'BU' 컬럼 감지: CE 로직 적용
+2026-06-15 11:06:03,548 - INFO -   -> (v41) BU(Division) 업데이트 및 대소문자 강제 보정...
+2026-06-15 11:06:03,605 - INFO -     📝 [Report] 변경 요약 저장됨: cleaned_0601~_SEAU_CE_JUNE_Summary_Media.csv (유형: 1개)
+2026-06-15 11:06:03,606 - INFO -    ✅ 개별 파일 저장 완료: cleaned_0601~_SEAU_CE_JUNE
+2026-06-15 11:06:03,606 - INFO - 
+📄 [파일 처리 4/7] SEDA_cE.csv
+2026-06-15 11:06:03,626 - INFO -   -> (v25) 'Date' 파싱 및 필터링...
+2026-06-15 11:06:03,641 - INFO -    -> (Metrics) 컬럼명 표준화 및 수치 처리...
+2026-06-15 11:06:03,645 - INFO -       🔧 컬럼명 정규화 적용: {'Revenue (USD)': 'Revenue', 'Media Spend (USD)': 'Media Spend (USD)'}
+2026-06-15 11:06:03,668 - INFO -   -> (Pipeline) 'Media Platform' 기준 클렌징 (Vectorized)...
+2026-06-15 11:06:03,754 - INFO -    -> 'BU' 컬럼 없음: MX 로직 적용
+2026-06-15 11:06:03,757 - INFO -   -> (Pipeline) 'Products' 기준 클렌징 (Vectorized)...
+2026-06-15 11:06:03,809 - INFO -      -> (Optimization) 'Multi' 371건 구제 시도...
+2026-06-15 11:06:03,857 - INFO -   -> (v20) Mindset 클렌징...
+2026-06-15 11:06:03,860 - INFO -   -> (v21) Funding 클렌징...
+2026-06-15 11:06:03,923 - ERROR -    🚨 [Skip] 파일 처리 중 오류 발생 (SEDA_cE.csv): [Errno 13] Permission denied: 'C:\\GMO_Cleansing\\2_Output\\cleaned_0501~_SEDA_cE.csv'
+Traceback (most recent call last):
+  File "c:\GMO_Cleansing\run.py", line 246, in main_workflow
+    save_to_csv_separated(df_to_save, output_base_path)
+  File "c:\GMO_Cleansing\src\reporting.py", line 93, in save_to_csv_separated
+    df_main.to_csv(main_path, index=False, encoding='utf-8-sig')
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\util\_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\core\generic.py", line 3989, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\io\formats\format.py", line 1014, in to_csv
+    csv_formatter.save()
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\io\formats\csvs.py", line 251, in save
+    with get_handle(
+         ^^^^^^^^^^^
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\io\common.py", line 873, in get_handle
+    handle = open(
+             ^^^^^
+PermissionError: [Errno 13] Permission denied: 'C:\\GMO_Cleansing\\2_Output\\cleaned_0501~_SEDA_cE.csv'
+2026-06-15 11:06:04,157 - INFO - 
+📄 [파일 처리 5/7] SEI_CE.csv
+2026-06-15 11:06:04,172 - INFO -   -> (v25) 'Date' 파싱 및 필터링...
+2026-06-15 11:06:04,192 - INFO -    -> (Metrics) 컬럼명 표준화 및 수치 처리...
+2026-06-15 11:06:04,195 - INFO -       🔧 컬럼명 정규화 적용: {'Revenue (USD)': 'Revenue', 'Media Spend (USD)': 'Media Spend (USD)'}
+2026-06-15 11:06:04,223 - INFO -   -> (Pipeline) 'Media Platform' 기준 클렌징 (Vectorized)...
+2026-06-15 11:06:04,313 - INFO -    -> 'BU' 컬럼 감지: CE 로직 적용
+2026-06-15 11:06:04,372 - INFO -   -> (v41) BU(Division) 업데이트 및 대소문자 강제 보정...
+2026-06-15 11:06:04,454 - INFO -     📝 [Report] 변경 요약 저장됨: cleaned_0501~_SEI_CE_Summary_Prod.csv (유형: 3개)
+2026-06-15 11:06:04,458 - INFO -     📝 [Report] 변경 요약 저장됨: cleaned_0501~_SEI_CE_Summary_Media.csv (유형: 2개)
+2026-06-15 11:06:04,458 - INFO -    ✅ 개별 파일 저장 완료: cleaned_0501~_SEI_CE
+2026-06-15 11:06:04,459 - INFO - 
+📄 [파일 처리 6/7] sepr+ce.csv
+2026-06-15 11:06:04,501 - INFO -   -> (v25) 'Date' 파싱 및 필터링...
+2026-06-15 11:06:04,526 - INFO -    -> (Metrics) 컬럼명 표준화 및 수치 처리...
+2026-06-15 11:06:04,528 - INFO -       🔧 컬럼명 정규화 적용: {'Revenue (USD)': 'Revenue', 'Media Spend (USD)': 'Media Spend (USD)'}
+2026-06-15 11:06:04,546 - INFO -   -> (Pipeline) 'Media Platform' 기준 클렌징 (Vectorized)...
+2026-06-15 11:06:04,645 - INFO -    -> 'BU' 컬럼 감지: CE 로직 적용
+2026-06-15 11:06:04,704 - INFO -   -> (v41) BU(Division) 업데이트 및 대소문자 강제 보정...
+2026-06-15 11:06:04,758 - INFO -    ✅ 개별 파일 저장 완료: cleaned_0104~_sepr+ce
+2026-06-15 11:06:04,758 - INFO - 
+📄 [파일 처리 7/7] SIEL_CE.csv
+2026-06-15 11:06:04,850 - INFO -   -> (v25) 'Date' 파싱 및 필터링...
+2026-06-15 11:06:04,999 - INFO -    -> (Metrics) 컬럼명 표준화 및 수치 처리...
+2026-06-15 11:06:05,005 - INFO -       🔧 컬럼명 정규화 적용: {'Revenue (USD)': 'Revenue', 'Media Spend (USD)': 'Media Spend (USD)'}
+2026-06-15 11:06:05,156 - INFO -   -> (Pipeline) 'Media Platform' 기준 클렌징 (Vectorized)...
+2026-06-15 11:06:05,891 - INFO -    -> 'BU' 컬럼 감지: CE 로직 적용
+2026-06-15 11:06:06,148 - INFO -   -> (v41) BU(Division) 업데이트 및 대소문자 강제 보정...
+2026-06-15 11:06:06,290 - ERROR -    🚨 [Skip] 파일 처리 중 오류 발생 (SIEL_CE.csv): [Errno 13] Permission denied: 'C:\\GMO_Cleansing\\2_Output\\cleaned_0101~_SIEL_CE.csv'
+Traceback (most recent call last):
+  File "c:\GMO_Cleansing\run.py", line 246, in main_workflow
+    save_to_csv_separated(df_to_save, output_base_path)
+  File "c:\GMO_Cleansing\src\reporting.py", line 93, in save_to_csv_separated
+    df_main.to_csv(main_path, index=False, encoding='utf-8-sig')
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\util\_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\core\generic.py", line 3989, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\io\formats\format.py", line 1014, in to_csv
+    csv_formatter.save()
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\io\formats\csvs.py", line 251, in save
+    with get_handle(
+         ^^^^^^^^^^^
+  File "C:\Miniconda\envs\work_env\Lib\site-packages\pandas\io\common.py", line 873, in get_handle
+    handle = open(
+             ^^^^^
+PermissionError: [Errno 13] Permission denied: 'C:\\GMO_Cleansing\\2_Output\\cleaned_0101~_SIEL_CE.csv'
+2026-06-15 11:06:06,293 - INFO - 
+💾 [최종 단계] 마스터 DB 동기화 및 리포트 생성
+2026-06-15 11:06:06,297 - INFO - 🔄 [Updater] MX 마스터 DB 갱신 중...
+2026-06-15 11:06:07,827 - INFO - 📊 [Audit] Total: 80,376 | Keep: 75,584 | Candidates: 4,792
+2026-06-15 11:06:11,599 - INFO - ✅ [MX] 완료. Total: 80,376 rows
+2026-06-15 11:06:11,633 - INFO - 🔄 [Updater] CE 마스터 DB 갱신 중...
+2026-06-15 11:06:12,256 - INFO - 📊 [Audit] Total: 13,896 | Keep: 1,443 | Candidates: 12,453
+2026-06-15 11:06:13,247 - INFO - ✅ [CE] 완료. Total: 13,955 rows
+2026-06-15 11:06:13,261 - INFO - 
+✨ 모든 작업 완료. 결과 폴더: C:\GMO_Cleansing\2_Output

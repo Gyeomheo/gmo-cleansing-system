@@ -71,7 +71,7 @@ def fast_normalize_text(series: pd.Series) -> pd.Series:
 # (A) MX & Media 파이프라인
 # =========================================================
 def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols: dict, is_media: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    # ⭐️ [Safety] 로직 시작 전 컬럼명 청소
+    # [Safety] 로직 시작 전 컬럼명 청소
     df_raw = sanitize_column_headers(df_raw)
 
     raw_cols = map_cols['raw_cols'] 

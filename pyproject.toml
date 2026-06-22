@@ -1,0 +1,20 @@
+[project]
+name = "GMO_Cleansing"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+[tool.ruff]
+# 검사할 대상 폴더들
+src = ["src"]
+# 한 줄의 최대 길이
+line-length = 88
+
+[tool.ruff.lint]
+# AI에게 "인지복잡도"와 "품질"을 강제하는 핵심 규칙들
+# E, F: 기본 에러/플러그
+# C90: 순환복잡도 
+# PLR: 리팩토링 권장 규칙 (함수가 너무 길면 경고)
+select = ["E", "F", "C901", "PLR0912", "PLR0915"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15

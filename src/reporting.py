@@ -101,19 +101,25 @@ def save_to_csv_separated(data_dict: dict, output_base_path: str):
             df.to_csv(sub_path, index=False, encoding='utf-8-sig')
             logging.info(f"    📝 [Report] 변경 요약 저장됨: {os.path.basename(sub_path)} (유형: {len(df)}개)")
 
-def save_unmapped_reports(unmapped_prod_set: set, unmapped_media_set: set):
+def save_unmapped_reports(unmapped_prod_data, unmapped_media_set: set):
     """
     [Final Report] 미매핑 키 저장
     """
     report_dir = config.OUTPUT_DIR / "Reports"
     os.makedirs(report_dir, exist_ok=True)
     
-    if unmapped_prod_set:
-        df_prod = pd.DataFrame(list(unmapped_prod_set), columns=['Unmapped_Product_Key'])
+    if isinstance(unmapped_prod_data, pd.DataFrame):
+        df_prod = unmapped_prod_data.copy()
+    elif unmapped_prod_data:
+        df_prod = pd.DataFrame(list(unmapped_prod_data), columns=['Unmapped_Product_Key'])
+    else:
+        df_prod = pd.DataFrame()
+
+    if not df_prod.empty:
         path_prod = report_dir / "Unmapped_Products.csv"
-        df_prod.to_csv(path_prod, index=False, encoding='utf-8-sig')
+        df_prod.to_csv(path_prod, index=False, encoding="utf-8-sig")
         logging.warning(f"⚠️  [Alert] 매핑 실패 제품 {len(df_prod)}건 저장됨")
-        
+
     if unmapped_media_set:
         df_media = pd.DataFrame(list(unmapped_media_set), columns=['Unmapped_Media_Key'])
         path_media = report_dir / "Unmapped_Media.csv"

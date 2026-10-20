@@ -99,6 +99,15 @@ def missing_ranges(kind: str, path: Path, report_week: int) -> dict[str, tuple[i
     return out
 
 
+def reminder_links() -> dict[str, str]:
+    """법인별 리마인드 회신할 곳(3_Config/reminder_links.csv) — 없으면 담당자가 직접 관리."""
+    path = Path(__file__).resolve().parent.parent / "3_Config" / "reminder_links.csv"
+    if not path.exists():
+        return {}
+    d = pd.read_csv(path, dtype=str, encoding="utf-8-sig").fillna("")
+    return {m.strip(): u.strip() for m, u in zip(d["Market"], d["링크"]) if m.strip() and u.strip()}
+
+
 def weeks_text(a: int, b: int) -> str:
     return f"Week {a}" if a == b else f"Week {a}~{b}"
 
@@ -168,10 +177,13 @@ def build(week: int) -> Path:
             ranges = {k: pend[k][sub] for k in ("MX", "CE") if sub in pend.get(k, {})}
             text = reminder_body(sub, ranges)
             subj = f"[Reminder] {sub} Weekly Report — " + " / ".join(f"{k} {weeks_text(*v)}" for k, v in ranges.items())
-            reminders.append({"market": sub, "subject": subj, "text": text})
+            link = reminder_links().get(sub, "")
+            reminders.append({"market": sub, "subject": subj, "text": text, "link": link})
             rid = f"r{len(reminders)}"
+            open_btn = (f' <a href="{html.escape(link)}" target="_blank"><button>메일 열기</button></a>'
+                        if link else "")
             parts.append(f'<p class="meta">{html.escape(sub)} — 제목: <b>{html.escape(subj)}</b> '
-                         f'<button onclick="cp(&quot;{rid}&quot;)">본문 복사</button></p>'
+                         f'<button onclick="cp(&quot;{rid}&quot;)">본문 복사</button>{open_btn}</p>'
                          f'<div class="box" id="{rid}" style="white-space:pre-wrap">{html.escape(text)}</div>')
     parts.append("<script>function cp(id){var r=document.createRange();"
                  "r.selectNodeContents(document.getElementById(id));var s=getSelection();s.removeAllRanges();"

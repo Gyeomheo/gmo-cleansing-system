@@ -6,7 +6,7 @@
 
 ## 0. 바로 시작
 
-**GUI: `GMO클렌징_GUI.cmd`** — 주차(기본 = 이번 ISO 주차) · 취합 구분(최신 취합본이 오래된 쪽이 기본) 확인 → **[▶ 전체 실행]**
+**GUI: 바탕화면 `Weekly Report` (또는 `GMO클렌징_GUI.cmd`)** — 복기(ROAS) 데이터 준비 GUI 와 같은 디자인. 바탕화면 `복기 (ROAS WIKI)` 는 ROAS 쪽 GUI — 주차(기본 = 이번 ISO 주차) · 취합 구분(최신 취합본이 오래된 쪽이 기본) 확인 → **[▶ 전체 실행]**
 1. ① 수집 · 클렌징 (= `run_all.py --root <주차 폴더>`)
 2. ② 취합 검증 (= `consolidate.py <CE|MX>`) — 기준 = 최신 취합본 RAW, 법인별로 값이 처음 달라진 날부터 교체
 3. ③ 취합본 만들기 (= `consolidate.py <CE|MX> --apply`) — 이전 취합본은 `old RAW files` 로, 새 `<YYMMDD>_… W<nn>_v1_GMO_<CE|MX>_RAW File.xlsx`,
@@ -67,8 +67,9 @@ Excel 에서 매핑 엑셀 · 마스터 CSV 를 열어 두면 점검에서 멈�
   법인 · Strategic · 추적(Y/N) · 고정 사유 = `3_Config/tracker_markets.csv`. 추적 N(제출 안 함) = 회색 줄, 주차 비움, 사유만.
   파일의 `고정 사유` 칸에 적으면 다음 주 취합본으로 이어짐. 취합본을 만들 때 자동(`tools/tracker.py`)
 - **[④ 메일]** (`tools/weekly_mail.py --week nn --copy`): 주간 메일 본문(그 주 구분 표 하나 — 홀수 주 CE, 짝수 주 MX)을 클립보드에 넣고 PCG 공유 Gmail 스레드를 연다
-  → 전체 회신 → Ctrl+V. 리마인드(**그 주 구분만** — W43 이면 CE, 최근 2주 모두 '-' 인 법인만(하나라도 Yes 면 제외), 끝 주 = 이번 주-1, 시작 = 마지막 제출+1)는 `Reports/메일_W<nn>.html` 의 [본문 복사].
+  → 전체 회신 → Ctrl+V. 리마인드(**그 주 구분만** — W43 이면 CE, 최근 2주 모두 '-' 인 법인만(하나라도 Yes 면 제외), 끝 주 = 이번 주-1, 시작 = **안 준 날짜가 속한 주** — 마지막 데이터 다음 날 기준, 주간 합계 법인은 마지막 주를 다 낸 것으로)는 `Reports/메일_W<nn>.html` 의 [본문 복사].
   **보내기는 직접.** 실제 파일은 CPCex 로 따로.
+  스레드 링크는 GUI 의 **Gmail 스레드** 칸 — 새 스레드로 보냈으면 그 링크를 붙여 넣고 [저장](`3_Config/mail_settings.json`).
 - 자동 초안(선택): `tools/gas_mail/Code.gs` 를 Apps Script 에 넣고 `dryRun` → `installTrigger`. 이후 [④ 메일] 때마다 5분 안에
   그 스레드에 회신 초안 · 리마인드 초안이 생김(`내 드라이브/GMO_메일초안/` 경유)
 

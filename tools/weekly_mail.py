@@ -3,7 +3,7 @@
     python tools/weekly_mail.py --week 43            → 2_Output/Reports/메일_W43.html (브라우저로 열림)
 
 주간 메일(메일 양식 시트 '3. 메일 작성' 문구 그대로)
-  제목  [Artience] [<이번 주 구분>] 2026 W<nn> GMO D2C Pacing Report
+  제목  [<이번 주 구분>] 2026 W<nn> GMO D2C Weekly Report   (담당자 2026-10-20)
   본문  이번 주 구분(MX/CE, 최신 취합본이 W<nn> 인 쪽) · 첨부 파일명 · Collection status 표 MX · CE
         표는 각 최신 취합본의 Tracker 시트를 색 · 굵기 · 테두리까지 인라인 서식으로 옮긴다(Gmail 붙여넣기용)
 리마인드 메일
@@ -30,85 +30,29 @@ DRAFT_DROP = Path(r"G:\내 드라이브\GMO_메일초안")                  # GA
 NB = "\xa0"
 
 
-def bgr_to_hex(c) -> str:
-    c = int(c)
-    return f"#{c & 0xFF:02X}{(c >> 8) & 0xFF:02X}{(c >> 16) & 0xFF:02X}"
-
-
-def table_html(ws, rng: str) -> str:
-    """Excel 범위 → 인라인 서식 HTML 표 (병합 · 바탕 · 글자색 · 굵기 · 정렬 · 테두리 · 열 너비)."""
-    r = ws.Range(rng)
-    nrow, ncol = r.Rows.Count, r.Columns.Count
-    widths = [round(r.Columns(j).Width * 1.33) for j in range(1, ncol + 1)]
-    skip = set()
-    out = ['<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Aptos,Calibri,Arial;'
-           'font-size:11pt">']
-    for i in range(1, nrow + 1):
-        out.append("<tr>")
-        for j in range(1, ncol + 1):
-            if (i, j) in skip:
-                continue
-            c = r.Cells(i, j)
-            span = ""
-            if c.MergeCells:
-                ma = c.MergeArea
-                if ma.Cells(1, 1).Address != c.Address:
-                    continue
-                rs, cs = ma.Rows.Count, ma.Columns.Count
-                for a in range(rs):
-                    for b in range(cs):
-                        skip.add((i + a, j + b))
-                span = f' rowspan="{rs}" colspan="{cs}"'
-            text = c.Text or ""
-            style = [f"width:{widths[j - 1]}px", "padding:2px 6px", "white-space:nowrap"]
-            if c.Interior.Pattern != -4142:
-                style.append(f"background:{bgr_to_hex(c.Interior.Color)}")
-            style.append(f"color:{bgr_to_hex(c.Font.Color)}")
-            if c.Font.Bold:
-                style.append("font-weight:bold")
-            style.append({-4108: "text-align:center", -4152: "text-align:right"}.get(c.HorizontalAlignment,
-                                                                                      "text-align:left"))
-            for k, side in ((7, "left"), (8, "top"), (9, "bottom"), (10, "right")):   # 변마다 그대로
-                b = c.Borders(k)
-                if b.LineStyle not in (-4142, None):
-                    style.append(f"border-{side}:1px solid {bgr_to_hex(b.Color)}")
-            out.append(f'<td{span} style="{";".join(style)}">{html.escape(text) or "&nbsp;"}</td>')
-        out.append("</tr>")
-    out.append("</table>")
-    return "".join(out)
-
-
-def tracker_tables() -> dict:
-    """{'MX': (주차, 파일, 표 html, Tracker df), 'CE': …} — 각 최신 취합본."""
-    import pythoncom
-    import win32com.client
-    res = {}
-    pythoncom.CoInitialize()
-    xl = win32com.client.DispatchEx("Excel.Application")
-    xl.Visible = False
-    xl.DisplayAlerts = False
+def contacts() -> dict[str, str]:
+    """메일 양식 시트의 PIC(C8) · CC(C9:C12) — Excel 없이 읽는다."""
     try:
-        for kind in ("MX", "CE"):
-            f = latest_file(kind)
-            if not f:
-                continue
-            wb = xl.Workbooks.Open(str(f), ReadOnly=True)
-            try:
-                ws = wb.Worksheets("Tracker")
-                last = ws.Cells(ws.Rows.Count, 2).End(-4162).Row
-                res[kind] = (int(NAME_RE.match(f.name).group(2)), f, table_html(ws, f"B3:H{last}"))
-            finally:
-                wb.Close(SaveChanges=False)
-        tpl = xl.Workbooks.Open(str(template_file()), ReadOnly=True)
-        try:
-            ws = tpl.Worksheets(TEMPLATE_SHEET)
-            res["_contacts"] = {"to": str(ws.Range("C8").Value or ""),
-                                "cc": " ".join(str(ws.Range(f"C{r}").Value or "") for r in (9, 10, 11, 12))}
-        finally:
-            tpl.Close(SaveChanges=False)
-    finally:
-        xl.Quit()
-        pythoncom.CoUninitialize()
+        d = fastexcel.read_excel(str(template_file())).load_sheet(TEMPLATE_SHEET, header_row=None,
+                                                                  n_rows=12).to_pandas()
+        cell = lambda r: str(d.iat[r - 1, 2]) if d.shape[0] >= r and d.iat[r - 1, 2] is not None else ""  # noqa: E731
+        return {"to": cell(8), "cc": " ".join(cell(r) for r in (9, 10, 11, 12))}
+    except Exception:
+        return {"to": "", "cc": ""}
+
+
+def tracker_tables(week: int) -> dict:
+    """그 주 구분(홀수 CE · 짝수 MX) 하나만: {kind: (주차, 파일, 표 html)}, '_contacts'.
+    표 HTML 은 Tracker 를 만들 때 저장해 둔 파일을 읽는다 — 없을 때만 Excel 로 Tracker 를 다시 만든다."""
+    import tracker
+    kind = "CE" if week % 2 else "MX"
+    res = {"_contacts": contacts()}
+    f = latest_file(kind)
+    if f and int(NAME_RE.match(f.name).group(2)) == week:
+        frag = tracker.fragment_path(kind, week)
+        if not frag.exists():
+            tracker.run(kind, week, path=f)
+        res[kind] = (week, f, frag.read_text(encoding="utf-8"))
     return res
 
 
@@ -119,10 +63,24 @@ def tracker_df(path: Path) -> pd.DataFrame:
 
 
 def last_week(path: Path) -> dict[str, int]:
-    """RAW 에서 법인별 마지막 제출 주차."""
-    raw = fastexcel.read_excel(str(path)).load_sheet("RAW", use_columns=["Subsidiary", "Week"]).to_pandas()
-    raw["Week"] = pd.to_numeric(raw["Week"], errors="coerce")
-    return raw.groupby("Subsidiary")["Week"].max().dropna().astype(int).to_dict()
+    """법인별 '다 낸' 마지막 주차 — 안 준 날짜부터 미제출로 본다(담당자 2026-10-20).
+
+    일별 데이터: 마지막 날의 다음 날이 속한 주부터 미제출 → 그 앞 주까지가 '다 낸 주'
+                 (SEI CE 가 9/30(수)까지면 W40 은 10/1~ 이 비어 있으므로 W39 까지 낸 것)
+    주간 합계(최근 8주 동안 날짜가 주에 하루뿐): 마지막 행의 주를 다 낸 것으로 본다(월요일 날짜 등)
+    """
+    raw = fastexcel.read_excel(str(path)).load_sheet("RAW", use_columns=["Subsidiary", "Date"]).to_pandas()
+    raw["Date"] = pd.to_datetime(raw["Date"], errors="coerce")
+    out = {}
+    for sub, g in raw.dropna(subset=["Date"]).groupby("Subsidiary"):
+        last = g["Date"].max()
+        recent = g[g["Date"] > last - pd.Timedelta(weeks=8)]["Date"]
+        days_per_week = recent.groupby(recent.dt.isocalendar().week).nunique().mean()
+        if days_per_week <= 1.5:                           # 주간 합계 행
+            out[sub] = int(last.isocalendar().week)
+        else:
+            out[sub] = int((last + pd.Timedelta(days=1)).isocalendar().week) - 1
+    return out
 
 
 def missing_ranges(kind: str, path: Path, report_week: int) -> dict[str, tuple[int, int]]:
@@ -166,26 +124,27 @@ Gyeom"""
 
 
 def build(week: int) -> Path:
-    tabs = tracker_tables()
+    tabs = tracker_tables(week)
     kinds = [k for k in ("MX", "CE") if k in tabs]
     this = next((k for k in kinds if tabs[k][0] == week), None)
     parts = ['<html><head><meta charset="utf-8"><title>메일 W%d</title>'
              '<style>body{font-family:Aptos,Calibri,Arial;font-size:11pt;max-width:1100px;margin:24px auto;'
-             'padding:0 16px}.box{border:1px dashed #999;padding:16px;margin:12px 0}.meta{color:#666;font-size:10pt}'
+             'padding:0 16px}.box{margin:12px 0 28px}.meta{color:#666;font-size:10pt}'
              'h2{font-size:13pt;margin-top:32px}</style></head><body>' % week]
     # ---- 주간 메일
     label = this or "MX/CE"
-    subject = f"[Artience] [{label}] 2026 W{week} GMO D2C Pacing Report"
+    subject = f"[{label}] 2026 W{week} GMO D2C Weekly Report"
     c = tabs.get("_contacts", {})
     parts.append("<h2>① 주간 메일 — 이 스레드에 회신</h2>")
     parts.append(f'<p class="meta">제목: <b>{html.escape(subject)}</b><br>받는 사람: {html.escape(c.get("to", ""))}'
                  f'<br>참조: {html.escape(c.get("cc", ""))}<br>아래 점선 안을 그대로 복사 → Gmail 에 붙여넣기</p>')
     # 담당자 실제 양식(2026-10-20)
     body = ["Dear PCG Team,<br>This is Gyeom Heo from Artience.<br><br>",
-            f"I am sharing the W{week} Weekly Raw Ad Platform Report.<br>",
-            (f"for this week’s update, only the {this} data has been included.<br>" if this else ""),
+            f"I am sharing the <b>W{week}</b> Weekly Raw Ad Platform Report.<br>",
+            (f"for this week’s update, only the <b>{this}</b> data has been included.<br>" if this else ""),
             f"{NB}<br>{NB}1) Attached File (CPCex Attached)<br>",
-            (f"{html.escape(tabs[this][1].name)}<br>" if this else ""),
+            (f'<ul style="margin:0;padding-left:24px"><li><b>{html.escape(tabs[this][1].name)}</b></li></ul>'
+             if this else ""),
             f"{NB}2) Collection status<br>"]
     if this:                                       # 격주로 그 주 구분 표 하나 (홀수 주 CE, 짝수 주 MX)
         body.append(tabs[this][2])
@@ -231,8 +190,31 @@ def build(week: int) -> Path:
     return out
 
 
-THREAD_URL = "https://mail.google.com/mail/u/0/#sent/KtbxLwHDjdztLxrkJqtLRHgMdBlCNnDdwg"   # PCG + 삼성 공유 스레드
-THREAD_QUERY = 'in:sent subject:"GMO D2C Pacing Report"'       # GAS 가 같은 스레드를 찾는 검색어(가장 최근)
+THREAD_URL = "https://mail.google.com/mail/u/0/#sent/KtbxLwHDjdztLxrkJqtLRHgMdBlCNnDdwg"   # 처음 받은 공유 스레드
+MAIL_SETTINGS = Path(__file__).resolve().parent.parent / "3_Config" / "mail_settings.json"
+
+
+def thread_url() -> str:
+    """PCG + 삼성 공유 스레드 링크 — GUI 에서 바꾸면 3_Config/mail_settings.json 에 저장된다."""
+    import json
+    try:
+        return json.loads(MAIL_SETTINGS.read_text(encoding="utf-8")).get("thread_url") or THREAD_URL
+    except (OSError, ValueError):
+        return THREAD_URL
+
+
+def save_thread_url(url: str) -> None:
+    import json
+    data = {}
+    if MAIL_SETTINGS.exists():
+        try:
+            data = json.loads(MAIL_SETTINGS.read_text(encoding="utf-8"))
+        except ValueError:
+            data = {}
+    data["thread_url"] = url.strip()
+    MAIL_SETTINGS.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+# GAS 가 같은 스레드를 찾는 검색어(가장 최근) — 새 제목 · 옛 제목 둘 다
+THREAD_QUERY = 'in:sent (subject:"GMO D2C Weekly Report" OR subject:"GMO D2C Pacing Report")'
 
 
 def copy_html_to_clipboard(fragment: str) -> None:
@@ -273,7 +255,7 @@ if __name__ == "__main__":
         import json
         import webbrowser
         copy_html_to_clipboard(json.loads(p.with_suffix(".json").read_text(encoding="utf-8"))["html"])
-        webbrowser.open(THREAD_URL)
+        webbrowser.open(thread_url())
         print("  ✔ 본문을 클립보드에 복사, Gmail 스레드를 열었음 → 전체 회신 → Ctrl+V (보내기는 직접)")
     if not a.no_open:
         os.startfile(p)  # noqa: S606

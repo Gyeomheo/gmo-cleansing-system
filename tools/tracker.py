@@ -7,14 +7,15 @@
                  "Yes", "-"), "-")
                  보고 주차 W 이면 W-2 · W-1 두 주 (메일 양식과 같다)
     Uncollected  두 주 모두 '-' 이면 True
-    Note         '고정 사유' 칸이 있으면 그것, 없고 '-' 가 있으면 'Missing submission'
+    Note         고정 사유(tracker_markets.csv)가 있으면 그것, 없고 '-' 가 있으면 'Missing submission'
     추적 = N     (tracker_markets.csv) 제출 안 하는 법인 — 회색 줄, 주차 · Uncollected 비움, Note 는 고정 사유만
 법인 · Strategic · Agency · 고정 사유의 기본값 = 3_Config/tracker_markets.csv.
-이전 취합본 Tracker 의 '고정 사유' 칸에 적은 값은 다음 취합본으로 이어진다(파일에서 고쳐도 됨).
+시트에는 메일에 붙일 표만 둔다 — 사유를 바꿀 땐 tracker_markets.csv 를 고친다.
 """
 from __future__ import annotations
 
 import argparse
+import html
 from pathlib import Path
 
 import pandas as pd
@@ -28,25 +29,6 @@ SHEET = "Tracker"
 def load_markets(kind: str) -> pd.DataFrame:
     df = pd.read_csv(MARKETS, dtype=str, encoding="utf-8-sig").fillna("")
     return df[df["구분"].str.upper() == kind].reset_index(drop=True)
-
-
-def carried_reasons(prev: Path | None) -> dict[str, str]:
-    """이전 취합본 Tracker 의 고정 사유 {법인: 사유}."""
-    if not prev or not prev.exists():
-        return {}
-    import fastexcel
-    try:
-        book = fastexcel.read_excel(str(prev))
-        if SHEET not in book.sheet_names:
-            return {}
-        t = book.load_sheet(SHEET, header_row=3).to_pandas()
-    except Exception:
-        return {}
-    t.columns = [str(c).replace(" ", "").strip() for c in t.columns]
-    if "Market" not in t.columns or "고정 사유" not in t.columns:
-        return {}
-    return {str(m).strip(): str(r).strip() for m, r in zip(t["Market"], t["고정 사유"])
-            if str(m).strip() and str(r).strip() not in ("", "None", "nan")}
 
 
 TEMPLATE_DIR = Path(r"G:\공유 드라이브\Samsung Perform_1\문서-1\2026\09. GMO Report\2. 국가별 weekly")
@@ -110,7 +92,6 @@ def write_tracker(wb, kind: str, week: int, reasons: dict[str, str]) -> None:
     ws.Range("E4:F4").Font.Bold = ws.Range("B4").Font.Bold
 
     m = load_markets(kind)
-    m["고정 사유"] = [reasons.get(k, v) for k, v in zip(m["Market"], m["고정 사유"])]
     first, last = 5, 4 + len(m)
     if len(m) > 11:                                      # 양식보다 법인이 많으면 마지막 줄 서식을 아래로
         ws.Range("B15:H15").Copy(Destination=ws.Range(f"B16:H{last}"))
@@ -119,19 +100,21 @@ def write_tracker(wb, kind: str, week: int, reasons: dict[str, str]) -> None:
         ws.Cells(row, 2).Value = m.iloc[i]["Market"]
         ws.Cells(row, 3).Value = m.iloc[i]["Strategic"]
         ws.Cells(row, 4).Value = m.iloc[i]["Agency"]
-        ws.Cells(row, 10).Value = m.iloc[i]["고정 사유"]
+        reason = str(m.iloc[i]["고정 사유"]).strip()
         if str(m.iloc[i].get("추적", "Y")).strip().upper() == "N":
             # 제출 안 하는 법인(회색 · Stop submission 등): 주차 칸은 비우고 사유만, 줄은 양식의 회색
             ws.Range(f"E{row}:G{row}").ClearContents()
-            ws.Cells(row, 8).Formula = f'=IF($J{row}<>"",$J{row},"")'
+            ws.Cells(row, 8).Value = reason
             ws.Range(f"B{row}:H{row}").Interior.Color = GRAY
             continue
         for k, w in enumerate(weeks):
             ws.Cells(row, 5 + k).Formula = (f'=IFERROR(IF(GETPIVOTDATA("{value_field}",{anchor},"Subsidiary",'
                                             f'TRIM(SUBSTITUTE($B{row},CHAR(160),"")),"Week",{w})>0,"Yes","-"),"-")')
         ws.Cells(row, 7).Formula = f'=IF(AND(E{row}="-",F{row}="-"),"True","")'
-        ws.Cells(row, 8).Formula = (f'=IF($J{row}<>"",$J{row},'
-                                    f'IF(OR(E{row}="-",F{row}="-"),"{NB}Missing submission",""))')
+        if reason:                                       # 고정 사유(tracker_markets.csv)가 있으면 그것
+            ws.Cells(row, 8).Value = reason
+        else:
+            ws.Cells(row, 8).Formula = f'=IF(OR(E{row}="-",F{row}="-"),"{NB}Missing submission","")'
     # 값에 따라 바뀌는 색은 양식 색 그대로 칸에 직접 칠한다(조건부 서식은 Gmail 붙여넣기에서 빠질 수 있다)
     wb.Application.Calculate()
     for row in range(first, last + 1):
@@ -140,15 +123,7 @@ def write_tracker(wb, kind: str, week: int, reasons: dict[str, str]) -> None:
             c.Font.Color = GREEN if str(c.Value).replace(NB, "").strip() == "Yes" else 0x000000
     ws.Range(f"G{first}:G{last}").Font.Color = 0x000000
     ws.Range(f"H{first}:H{last}").Font.Color = BLUE
-    ws.Range("J4").Value = "고정 사유"
-    ws.Range("K4").Value = ("< 미취합 사유 · 특이사항(메일 Note 에 그대로, 다음 주 파일로 이어짐). "
-                            "비우면 '-' 일 때 Missing submission")
-    ws.Range("J4:K4").Font.Color = 0x808080
-    ws.Range(f"J{first}:J{last}").Interior.Color = 0xF2F2F2
-    ws.Columns("J").ColumnWidth = 30
-    ws.Range("B1").Value = f"메일용 — B3:H{last} 복사 (W{week} 보고, 판정 = status 피벗, 최근 2주)"
-    ws.Range("B1").Font.Color = 0x808080
-    wb.Application.Calculate()
+    wb.Application.Calculate()                       # 시트에는 메일 표만(안내 · 고정 사유 칸 없음 — 담당자 2026-10-20)
 
 
 def read_back(path: Path, kind: str) -> pd.DataFrame:
@@ -159,13 +134,65 @@ def read_back(path: Path, kind: str) -> pd.DataFrame:
     return t
 
 
+def bgr_to_hex(c) -> str:
+    c = int(c)
+    return f"#{c & 0xFF:02X}{(c >> 8) & 0xFF:02X}{(c >> 16) & 0xFF:02X}"
+
+
+def table_html(ws, rng: str) -> str:
+    """Excel 범위 → 인라인 서식 HTML 표 (병합 · 바탕 · 글자색 · 굵기 · 정렬 · 테두리 · 열 너비)."""
+    r = ws.Range(rng)
+    nrow, ncol = r.Rows.Count, r.Columns.Count
+    widths = [round(r.Columns(j).Width * 1.33) for j in range(1, ncol + 1)]
+    skip = set()
+    out = ['<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Aptos,Calibri,Arial;'
+           'font-size:11pt">']
+    for i in range(1, nrow + 1):
+        out.append("<tr>")
+        for j in range(1, ncol + 1):
+            if (i, j) in skip:
+                continue
+            c = r.Cells(i, j)
+            span = ""
+            if c.MergeCells:
+                ma = c.MergeArea
+                if ma.Cells(1, 1).Address != c.Address:
+                    continue
+                rs, cs = ma.Rows.Count, ma.Columns.Count
+                for a in range(rs):
+                    for b in range(cs):
+                        skip.add((i + a, j + b))
+                span = f' rowspan="{rs}" colspan="{cs}"'
+            text = c.Text or ""
+            style = [f"width:{widths[j - 1]}px", "padding:2px 6px", "white-space:nowrap"]
+            if c.Interior.Pattern != -4142:
+                style.append(f"background:{bgr_to_hex(c.Interior.Color)}")
+            style.append(f"color:{bgr_to_hex(c.Font.Color)}")
+            if c.Font.Bold:
+                style.append("font-weight:bold")
+            style.append({-4108: "text-align:center", -4152: "text-align:right"}.get(c.HorizontalAlignment,
+                                                                                      "text-align:left"))
+            for k, side in ((7, "left"), (8, "top"), (9, "bottom"), (10, "right")):   # 변마다 그대로
+                b = c.Borders(k)
+                if b.LineStyle not in (-4142, None):
+                    style.append(f"border-{side}:1px solid {bgr_to_hex(b.Color)}")
+            out.append(f'<td{span} style="{";".join(style)}">{html.escape(text) or "&nbsp;"}</td>')
+        out.append("</tr>")
+    out.append("</table>")
+    return "".join(out)
+
+
+def fragment_path(kind: str, week: int) -> Path:
+    return config.OUTPUT_DIR / "Reports" / f"Tracker_{kind}_W{week}.html"
+
+
 def run(kind: str, week: int, path: Path | None = None, prev: Path | None = None) -> int:
     import pythoncom
     import win32com.client
 
     from consolidate import latest_file
     path = path or latest_file(kind)
-    reasons = carried_reasons(prev) if prev else carried_reasons(path)
+    reasons: dict[str, str] = {}
     pythoncom.CoInitialize()
     xl = win32com.client.DispatchEx("Excel.Application")
     xl.Visible = False
@@ -173,6 +200,12 @@ def run(kind: str, week: int, path: Path | None = None, prev: Path | None = None
     try:
         wb = xl.Workbooks.Open(str(path))
         write_tracker(wb, kind, week, reasons)
+        ws = wb.Worksheets(SHEET)
+        last = ws.Cells(ws.Rows.Count, 2).End(-4162).Row
+        # 메일용 표 HTML 을 여기서 같이 저장 — 메일 단계는 Excel 을 띄우지 않고 이 파일만 읽는다(속도)
+        frag = fragment_path(kind, week)
+        frag.parent.mkdir(parents=True, exist_ok=True)
+        frag.write_text(table_html(ws, f"B3:H{last}"), encoding="utf-8")
         wb.Save()
         wb.Close(SaveChanges=False)
     finally:

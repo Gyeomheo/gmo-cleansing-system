@@ -3,7 +3,7 @@
 법인별 GMO 원본(MX · CE)을 모아 매핑 엑셀 기준으로 클렌징하고, `TOTAL_MASTER_MX/CE.csv` 마스터에 누적한 뒤
 공유 드라이브 **D2C 취합본**(RAW · 피벗 · Collection status Tracker)과 주간 메일까지 만든다.
 **회차 실행에는 AI 가 필요 없다** — 버튼 한 번. Claude 는 코드를 고칠 때만 쓴다.
-현재 상태 · 이력 · 확정 규칙 · 남은 일은 [docs/작업이력.md](docs/작업이력.md).
+현재 상태 · 이력 · 확정 규칙 · 남은 일은 [docs/작업이력.md](docs/작업이력.md), 클렌징 코어(`src/pipeline.py`) 단계별 설명은 [docs/클렌징로직.md](docs/클렌징로직.md).
 
 - 기존 클렌징 로직(`src/pipeline.py`)은 그대로 두고 그 위에 얹는다(+ 알파). 기본 경로 결과는 자동화 전 `run.py` 와 바이트 단위로 같다
 - 2026 년만 추적한다(`src/config.py` `MIN_DATE = '2026-01-01'`)

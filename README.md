@@ -8,10 +8,44 @@
 - 기존 클렌징 로직(`src/pipeline.py`)은 그대로 두고 그 위에 얹는다(+ 알파). 기본 경로 결과는 자동화 전 `run.py` 와 바이트 단위로 같다
 - 2026 년만 추적한다(`src/config.py` `MIN_DATE = '2026-01-01'`)
 
+### 한눈에 — 파일이 어디서 어디로 가나
+
+```mermaid
+flowchart LR
+  subgraph SD["공유 드라이브 · 09. GMO Report"]
+    W["2. 국가별 weekly<br/>nn주차 / MX·CE / 법인 MMDD"]
+    D["3. Weekly Dashboard RAW File / D2C<br/>Wnn 취합본 (RAW · 피벗 · Tracker)"]
+    O["old RAW files"]
+  end
+  subgraph PC["이 PC · C:/GMO_Cleansing"]
+    I["1_Input"]
+    C["클렌징<br/>기존 로직 + 알파"]
+    M["2_Output<br/>TOTAL_MASTER · cleaned"]
+    R["2_Output/Reports<br/>실행요약 · 취합검증 · 메일"]
+  end
+  G["Gmail<br/>지난주 메일에 전체 회신"]
+  W -->|"① 수집"| I --> C --> M
+  C --> R
+  M -->|"② 검증 · ③ 취합"| D
+  D -.->|"이전 취합본"| O
+  D -->|"④ 메일 (보내기는 직접)"| G
+```
+
 ## 0. 바로 시작 — 바탕화면 `Weekly Report`
 
 (= `GMO클렌징_GUI.cmd`) 머리줄에서 **주차**(기본 = 이번 ISO 주차)와 **구분**(홀수 주 CE · 짝수 주 MX)을 확인 → **[▶ 전체 실행]**.
 Excel 은 모두 닫고 돌린다.
+
+![Weekly Report GUI](docs/img/gui.png)
+
+```mermaid
+flowchart LR
+  A["① 수집 · 클렌징"] --> B{"② 취합 검증"}
+  B -->|"오류 없음"| C["③ 취합본 만들기<br/>+ Tracker"]
+  B -->|"오류"| X["멈춤 — Reports/취합검증_구분.md 확인"]
+  C --> D["④ 메일<br/>본문 복사 · 지난 메일 열기"]
+  D --> E(["보내기는 담당자가 직접"])
+```
 
 | 단계 | 하는 일 | 같은 명령 |
 |---|---|---|
@@ -28,14 +62,24 @@ GUI 없이: `이번주_실행.cmd`(① 만), 손으로 받은 CSV 는 `클렌징
 
 ## 1. 매주 흐름
 
-```
-국가별 weekly 폴더 ─▶ ① 수집(zip · 시트 · 머리줄 · 값 보정) ─▶ 1_Input ─▶ 점검 ─▶ 매핑 자동 추론 ─▶ run.py 클렌징
-                                                                                       │  + 캠페인 역추적 · 미디어 표준표
-                                                                                       ▼
-   매핑등록.xlsx ◀── 매핑 제안 ◀── 실행 요약 ◀── TOTAL_MASTER_*.csv · cleaned_*.csv · _이번실행_<구분>.csv
-         │ O 표시 → 매핑등록.cmd (등록 → --remap 재실행)
-                                                                                       ▼
-                        ② 취합 검증 ─▶ ③ 취합본(RAW · 피벗 · Tracker) ─▶ ④ 메일(회신 본문 · 리마인드) ─▶ 보내기는 직접
+**기존 로직 + 알파** — 클렌징 코어는 손대지 않고, 앞뒤에만 얹는다.
+
+```mermaid
+flowchart TB
+  subgraph PRE["클렌징 전 · 알파"]
+    P1["수집 보정<br/>머리줄 별칭 · 밀린 열 · S.com / GMO / DA"]
+    P2["매핑 자동 추론<br/>확실한 것만 매핑 엑셀에 행 추가"]
+  end
+  subgraph CORE["기존 로직 · src/pipeline.py — 그대로"]
+    K["날짜 · 숫자 · 미디어 · 제품 클렌징<br/>(매핑 엑셀 기준)"]
+  end
+  subgraph POST["클렌징 뒤 · 알파 — 빈 값 · Multi · Others 만 손댐"]
+    Q1["캠페인 역추적"]
+    Q2["미디어 표준표"]
+  end
+  PRE --> CORE --> POST --> U["마스터 갱신<br/>법인별 숫자가 처음 달라진 날부터 교체"]
+  U --> S["실행 요약 · 매핑 제안"]
+  S -.->|"제안에 O 표시 → 매핑등록.cmd"| P2
 ```
 
 | 단계 | 하는 일 | 코드 |
@@ -52,6 +96,35 @@ GUI 없이: `이번주_실행.cmd`(① 만), 손으로 받은 CSV 는 `클렌징
 
 ## 2. 취합 (`tools/consolidate.py`)
 
+**법인별 교체 규칙** — 겹치는 기간에서 숫자가 처음 달라진 날부터 새 것으로 바꾸고, 그 앞과 다른 법인은 손대지 않는다.
+
+```text
+              10/01               10/12               10/18
+SEPR   RAW    ###########################
+       NEW    ....................#####################   <- 10/12 부터 숫자가 다름
+       OUT    ####################=====================   (= : 새 데이터로 교체)
+
+SEAU   RAW    ###########################
+       NEW    ...........................######           <- 겹치는 날은 숫자가 같음
+       OUT    ###########################======           (뒤에 이어 붙이기만)
+
+SEI    RAW    ##################                          <- 이번에 안 냄
+       OUT    ##################                          (그대로)
+```
+
+```mermaid
+flowchart LR
+  A["최신 취합본 RAW"] --> M["법인별 합치기"]
+  B["_이번실행_구분.csv"] --> M
+  M --> C["완전 중복 제거 · 미디어 표준표 ·<br/>CPC 재계산 · 표기 통일"]
+  C --> V{"검증"}
+  V -->|"오류"| X["멈춤"]
+  V -->|"통과"| W["Excel 로 쓰기<br/>RAW 교체 · 피벗 캐시 1개 · 새로고침"]
+  W --> R{"다시 읽어<br/>모든 행 · 열 대조"}
+  R -->|"같음"| T["Tracker 시트 · 이전 파일 → old RAW files"]
+```
+
+
 - 기준 = 공유 드라이브 `3. Weekly Dashboard RAW File\D2C` 의 최신 취합본 RAW. 법인별로 **값이 처음 달라진 날부터** 이번 실행 결과로 교체, 나머지 법인 · 날짜는 그대로
 - 완전 중복 행 제거, 미디어 표준표 재검사, CPC = `IFERROR(Spend / Clicks, 0)` 다시 계산, 표기 통일
 - 검증(오류면 ③ 안 함): 안 바뀐 법인 보존 · 법인별 교체 전후 · 변화 큰 법인(경고) · CPC · 날짜(미래 · 범위) · 법인 빈 값 · 미디어 표준표 밖 · 중복 행
@@ -61,6 +134,26 @@ GUI 없이: `이번주_실행.cmd`(① 만), 손으로 받은 CSV 는 `클렌징
 ## 3. 매핑 자동 추론 (`tools/auto_mapping.py`, run_all 이 클렌징 전에 실행)
 
 매핑 키에 없는 원본 값 중 **법칙으로 확실한 것만** 매핑 엑셀에 자동 등록한다(메모 열 '자동: <법칙>'). 끄려면 `--no-auto`. 미디어는 대상 아님(§5).
+
+```mermaid
+flowchart TD
+  OK["매핑 엑셀에 자동 등록<br/>메모: 자동 · 법칙 번호"]
+  P["Reports/매핑등록.xlsx 제안<br/>사람이 확인 후 O"]
+  S["매핑 키에 없는 원본 값"] --> G{"일반값 · 3글자 미만?<br/>Other · Multi · Tablet"}
+  G -->|"예"| P
+  G -->|"아니오"| R0{"0 · 별칭표에 있나<br/>Q8 · H8 · B8"}
+  R0 -->|"예"| OK
+  R0 -->|"아니오"| R1{"1 · 기존 키와 띄어쓰기 ·<br/>대소문자만 다름"}
+  R1 -->|"예"| OK
+  R1 -->|"아니오"| R2{"2 · 표준 제품명과 같음"}
+  R2 -->|"예"| OK
+  R2 -->|"아니오"| R3{"3 · 표준 시리즈명 안에<br/>단어로 · 후보 하나"}
+  R3 -->|"예"| OK
+  R3 -->|"아니오"| R4{"4 · 과거 이력 90% 이상<br/>한 표준값으로"}
+  R4 -->|"예"| OK
+  R4 -->|"아니오"| P
+```
+
 
 0. 별칭 풀기 — `3_Config/aliases.csv` (Q8 = Z Fold8 Ultra, H8 = Z Fold8, B8 = Z Flip8). 새 코드명은 여기에 한 줄
 1. 띄어쓰기 · 대소문자 · 기호만 다른 기존 키 (Watch 9 = Watch9, Tab S10 Fe = Tab S10 FE)
@@ -75,6 +168,18 @@ GUI 없이: `이번주_실행.cmd`(① 만), 손으로 받은 CSV 는 `클렌징
 
 캠페인명 택소노미의 제품 코드로 비어 있거나 Multi · Others 인 제품 분류를 채운다. 예: `CN~d2c-ce-tv_PR~nq4k_SB~tv_…` → TV / Neo QLED.
 
+```mermaid
+flowchart TD
+  S["클렌징 끝난 행"] --> Q1{"맞는 규칙이 있나<br/>법인 · 구분 · PR · SB · 키워드 · 제외 · 시작일"}
+  Q1 -->|"없음"| K["그대로"]
+  Q1 -->|"있음"| Q2{"번들(+) 규칙 또는<br/>원본보다 우선 = O"}
+  Q2 -->|"예"| REP["교체 (예: S26 + Buds → Multi)"]
+  Q2 -->|"아니오"| Q3{"지금 분류가<br/>빈 값 · Multi · Others"}
+  Q3 -->|"예"| FILL["채움 → Campaign_Rule 열에 기록"]
+  Q3 -->|"아니오"| CF["그대로 · Summary_Campaign 에 '충돌'"]
+```
+
+
 - **원본 우선**: 클렌징 결과의 시리즈나 분류가 빈 값 · Multi · Other(s) 일 때만 채운다. 원본이 구체적인데 규칙과 다르면 바꾸지 않고 `cleaned_*_Summary_Campaign.csv` 에 '충돌(그대로)'로만 남긴다
 - **번들 예외**: 키워드를 `+` 로 묶은 규칙(예: `s26|f1h26 + buds`)과 '원본보다 우선 = O' 규칙은 원본을 교체한다(→ Multi 등)
 - 규칙 열: 사용(O) · 법인(비우면 전체) · 구분(MX/CE) · PR · SB · 키워드(`|` 하나, `+` 모두 — 캠페인명 · Product Series · Products 원본에서 찾음) · 제외 키워드 · Category · Series · Products · 시작일 · 원본보다 우선(O) · 근거
@@ -87,6 +192,21 @@ GUI 없이: `이번주_실행.cmd`(① 만), 손으로 받은 CSV 는 `클렌징
 
 미디어는 D2C 표준표에 있는 조합만 쓴다. **미디어 매핑 엑셀에 새 플랫폼을 넣지 않는다** — 표를 고치려면 이 CSV 를.
 
+```mermaid
+flowchart TD
+  S["Media Type 1 · Type 2 · Platform"] --> A["약어 풀기<br/>PMAX → Performance Max · FB → Meta"]
+  A --> B{"Type 1 이 표에 있나"}
+  B -->|"아니오"| B2["Type 2 로 Type 1 찾기<br/>Other / PerformanceMax → Shopping Ads"]
+  B -->|"예"| C
+  B2 --> C{"Platform 이<br/>비었거나 Other 류"}
+  C -->|"예"| D["표의 기본값 (YouTube → Google)<br/>또는 그 Type 2 의 유일한 Platform"]
+  C -->|"아니오"| E
+  D --> E{"표에 있는 조합"}
+  E -->|"예"| OK["그대로"]
+  E -->|"아니오"| OT["Others · Other DSPs<br/>원본은 Media Platform (Raw)"]
+```
+
+
 - 표에 없는 Platform → Others(DSP 는 Other DSPs), 표에 없는 Type 2 → Others / Others, Affiliate Platform 은 원본 그대로
 - Type 1 이 표에 없으면 Type 2 로 찾는다(Other / PerformanceMax → Shopping Ads)
 - Platform 이 비었거나 Other 류면 표의 `기본` 열 O 값(YouTube → Google), 없으면 그 Type 2 의 Platform 이 하나뿐일 때 그것(Performance Max · GDN · Demand Gen → Google). 띄어쓰기 · 대소문자 무시
@@ -94,6 +214,31 @@ GUI 없이: `이번주_실행.cmd`(① 만), 손으로 받은 CSV 는 `클렌징
 - 원본 값은 마스터 `Media Platform (Raw)` 에. 마스터 과거 행도 매 실행 같은 검사(`tools/master_media.py`)
 
 ## 6. Collection status Tracker · 메일
+
+```mermaid
+flowchart TD
+  T["법인 · 3_Config/tracker_markets.csv"] --> N{"추적 = N<br/>(제출 안 함)"}
+  N -->|"예"| GR["회색 줄 · 고정 사유만"]
+  N -->|"아니오"| Y{"최근 2주 W-2 · W-1<br/>하나라도 Yes"}
+  Y -->|"예"| OK["Collected · 리마인드 안 함"]
+  Y -->|"아니오"| U["Uncollected True · Missing submission"]
+  U --> RM["리마인드 대상 (그 주 구분만)<br/>안 준 날짜가 속한 주 ~ 이번 주-1"]
+```
+
+```mermaid
+sequenceDiagram
+  actor U as 담당자
+  participant G as Weekly Report GUI
+  participant M as Gmail
+  U->>G: ④ 메일
+  G->>G: Tracker HTML → 본문을 클립보드에
+  G->>M: 보낸편지함 검색 열기 (최근 3주 GMO Weekly Report)
+  U->>M: 지난주 메일 → 전체 회신
+  U->>G: [제목 복사]
+  U->>M: 제목 붙여넣기 · 본문 Ctrl+V · 보내기
+  Note over M: 지난 메일이 아래로 인용 → 한 스레드에 업무 기록
+```
+
 
 - **Tracker 시트**(취합본 맨 앞, `tools/tracker.py`): 메일 양식(`D2C Weekly Report 취합_*.xlsx` › `3. 메일 작성`)의 표를 서식째 복사하고, 값은 **status 피벗** `GETPIVOTDATA`.
   - 최근 2주(보고 W 이면 W-2 · W-1) Yes / -, 두 주 모두 - 면 Uncollected True, Note = 고정 사유 또는 Missing submission. Collection status 칸만 테두리
@@ -107,6 +252,13 @@ GUI 없이: `이번주_실행.cmd`(① 만), 손으로 받은 CSV 는 `클렌징
 - 자동 초안(선택, 미설정): `tools/gas_mail/Code.gs` 를 Apps Script 에 넣고 `dryRun` → `installTrigger`. [④ 메일] 때마다 `내 드라이브/GMO_메일초안/` 경유로 5분 안에 회신 초안 · 리마인드 초안
 
 ## 7. 매핑 한 줄 등록 (Claude 에게 부탁하던 것)
+
+```mermaid
+flowchart LR
+  A["매핑등록.xlsx 에 O<br/>또는 mapping.py add"] --> B["키 정규화 · 중복 확인<br/>매핑 엑셀 백업"]
+  B --> C["매핑 엑셀에 행 추가"] --> D["미리보기"] --> E["run_all.py --remap<br/>마스터에 반영"]
+```
+
 
 ```bash
 python tools/mapping.py add MX "S26 FE" Smartphones "S26 Series" "S26 FE"

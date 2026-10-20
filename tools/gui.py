@@ -2,7 +2,7 @@
 
     GMO클렌징_GUI.cmd 더블클릭 (또는 python tools/gui.py)
 
-[▶ 전체 실행] = ① → ② → 검증에 오류가 없으면 ③ 까지 자동. 각 단계는 tools/ 의 명령을 그대로 부른다.
+[▶ 전체 실행] = ① → ② → 검증에 오류가 없으면 ③ → ④ 메일(본문 클립보드 + Gmail 스레드 열기, 보내기는 직접).
 """
 from __future__ import annotations
 
@@ -19,20 +19,15 @@ from tkinter import filedialog, messagebox, ttk
 
 from collect import WEEKLY_ROOT
 from common import REPORT_DIR, ROOT, config
-from consolidate import DASH_DIR, NAME_RE, latest_file
+from consolidate import DASH_DIR
 
 FONT = ("Malgun Gothic", 10)
 MONO = ("Consolas", 9)
 
 
-def suggest_kind() -> str:
-    """최신 취합본이 더 오래된 쪽(격주로 번갈아 나옴)."""
-    weeks = {}
-    for k in ("MX", "CE"):
-        f = latest_file(k)
-        m = NAME_RE.match(f.name) if f else None
-        weeks[k] = int(m.group(2)) if m else 0
-    return min(weeks, key=weeks.get)
+def suggest_kind(week: int) -> str:
+    """격주: 홀수 주 CE, 짝수 주 MX (담당자 2026-10-20)."""
+    return "CE" if week % 2 else "MX"
 
 
 class App(tk.Tk):
@@ -52,10 +47,10 @@ class App(tk.Tk):
         ttk.Spinbox(top, from_=1, to=53, width=5, textvariable=self.week,
                     command=self.refresh_paths).grid(row=0, column=1, sticky="w", padx=(4, 16))
         ttk.Label(top, text="취합").grid(row=0, column=2, sticky="w")
-        self.kind = tk.StringVar(value=suggest_kind())
+        self.kind = tk.StringVar(value=suggest_kind(self.week.get()))
         for i, k in enumerate(("CE", "MX")):
             ttk.Radiobutton(top, text=k, value=k, variable=self.kind).grid(row=0, column=3 + i, padx=2)
-        ttk.Label(top, text="(최신 취합본이 오래된 쪽이 기본)").grid(row=0, column=5, sticky="w", padx=8)
+        ttk.Label(top, text="(홀수 주 CE · 짝수 주 MX)").grid(row=0, column=5, sticky="w", padx=8)
 
         ttk.Label(top, text="원본 폴더").grid(row=1, column=0, sticky="w", pady=(8, 0))
         self.root_dir = tk.StringVar()
@@ -75,6 +70,7 @@ class App(tk.Tk):
             ttk.Button(steps, text="① 수집 · 클렌징", command=lambda: self.start([self.step_clean])),
             ttk.Button(steps, text="② 취합 검증", command=lambda: self.start([self.step_check])),
             ttk.Button(steps, text="③ 취합본 만들기", command=lambda: self.start([self.step_make])),
+            ttk.Button(steps, text="④ 메일", command=lambda: self.start([self.step_mail])),
         ]
         for b in self.btns:
             b.pack(side="left", padx=4)
@@ -94,6 +90,8 @@ class App(tk.Tk):
     # ------------------------------------------------------------ 경로
     def refresh_paths(self) -> None:
         self.root_dir.set(str(WEEKLY_ROOT / f"{self.week.get()}주차"))
+        if hasattr(self, "kind"):
+            self.kind.set(suggest_kind(self.week.get()))
 
     def pick(self) -> None:
         d = filedialog.askdirectory(initialdir=str(WEEKLY_ROOT), title="주차 폴더(안에 MX · CE 폴더) 선택")
@@ -102,6 +100,7 @@ class App(tk.Tk):
             m = re.search(r"(\d+)\s*주차", Path(d).name)
             if m:
                 self.week.set(int(m.group(1)))
+                self.kind.set(suggest_kind(self.week.get()))
 
     def open_path(self, p: Path | None) -> None:
         p = Path(self.dash.get()) if p is None else p
@@ -140,8 +139,13 @@ class App(tk.Tk):
         return self.call([str(ROOT / "tools" / "consolidate.py"), self.kind.get(), "--apply",
                           "--week", str(self.week.get())]) == 0
 
+    def step_mail(self) -> bool:
+        """주간 메일 본문 → 클립보드 + Gmail 스레드 열기, 리마인드는 HTML 에서 [본문 복사]. 보내기는 직접."""
+        self.status.set("④ 메일 만드는 중…")
+        return self.call([str(ROOT / "tools" / "weekly_mail.py"), "--week", str(self.week.get()), "--copy"]) == 0
+
     def run_all(self) -> None:
-        self.start([self.step_clean, self.step_check, self.step_make])
+        self.start([self.step_clean, self.step_check, self.step_make, self.step_mail])
 
     def start(self, steps) -> None:
         if self.busy:

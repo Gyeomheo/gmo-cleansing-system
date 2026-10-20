@@ -60,6 +60,18 @@ Excel 에서 매핑 엑셀 · 마스터 CSV 를 열어 두면 점검에서 멈�
 - 실행마다 규칙 없는 코드는 `Reports/캠페인규칙제안.xlsx` 로 (같은 코드가 다른 행에서 들어온 값으로 제안). O 표시 → **`캠페인규칙등록.cmd`**
 - 바뀐 행은 cleaned 파일 `Campaign_Rule` 열에 어떤 규칙인지 남는다. 끄려면 `src/config.py` 의 `CAMPAIGN_BACKTRACE = False`
 
+## 1-1. Collection status Tracker · 메일
+
+- **Tracker 시트**(취합본 맨 앞): 메일 양식(`D2C Weekly Report 취합_*.xlsx` › `3. 메일 작성`)의 표를 서식째 복사하고, 값은 **status 피벗** 수식.
+  최근 2주(보고 W 이면 W-2 · W-1) Yes / -, 두 주 모두 - 면 Uncollected True, Note = 고정 사유 또는 Missing submission.
+  법인 · Strategic · 추적(Y/N) · 고정 사유 = `3_Config/tracker_markets.csv`. 추적 N(제출 안 함) = 회색 줄, 주차 비움, 사유만.
+  파일의 `고정 사유` 칸에 적으면 다음 주 취합본으로 이어짐. 취합본을 만들 때 자동(`tools/tracker.py`)
+- **[④ 메일]** (`tools/weekly_mail.py --week nn --copy`): 주간 메일 본문(그 주 구분 표 하나 — 홀수 주 CE, 짝수 주 MX)을 클립보드에 넣고 PCG 공유 Gmail 스레드를 연다
+  → 전체 회신 → Ctrl+V. 리마인드(**그 주 구분만** — W43 이면 CE, 최근 2주 모두 '-' 인 법인만(하나라도 Yes 면 제외), 끝 주 = 이번 주-1, 시작 = 마지막 제출+1)는 `Reports/메일_W<nn>.html` 의 [본문 복사].
+  **보내기는 직접.** 실제 파일은 CPCex 로 따로.
+- 자동 초안(선택): `tools/gas_mail/Code.gs` 를 Apps Script 에 넣고 `dryRun` → `installTrigger`. 이후 [④ 메일] 때마다 5분 안에
+  그 스레드에 회신 초안 · 리마인드 초안이 생김(`내 드라이브/GMO_메일초안/` 경유)
+
 ## 2-0. 미디어 표준표 (`3_Config/media_taxonomy.csv`)
 
 미디어는 D2C 표준표에 있는 조합만 쓴다. 클렌징 뒤 표에 없는 Platform → Others(DSP 는 Other DSPs), 표에 없는 Type 2 → Others / Others,

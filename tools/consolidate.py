@@ -382,6 +382,12 @@ def create(src: Path, name: str, header: list[str], out: pd.DataFrame) -> int:
         print("  ✖ 저장 후 대조 실패 — 새 파일을 지우고 이전 취합본을 그대로 둠: " + " / ".join(errors))
         return 1
     print("  ✔ 저장 후 대조: RAW 행 · Spend 합계 · 피벗 캐시(1개, 행 수 일치)")
+    try:                                          # 메일용 Collection status (status 피벗 기준)
+        import tracker
+        m = NAME_RE.match(name)
+        tracker.run(m.group(4), int(m.group(2)), path=dest, prev=backup)
+    except Exception as e:                        # Tracker 실패는 취합본을 막지 않는다
+        print(f"  ⚠ Tracker 못 만듦: {e}")
     if backup.exists() and src.exists():
         src.unlink()             # 같은 파일이 old RAW files 에 있으므로 D2C 폴더에서는 뺀다(=옮김)
     print(f"  ✔ 새 취합본: {dest}\n  ✔ 이전 취합본: {backup}")

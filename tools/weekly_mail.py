@@ -1,0 +1,279 @@
+"""주간 메일 · 리마인드 메일 — Gmail 에 붙여 넣을 HTML 을 만든다(보내지는 않는다).
+
+    python tools/weekly_mail.py --week 43            → 2_Output/Reports/메일_W43.html (브라우저로 열림)
+
+주간 메일(메일 양식 시트 '3. 메일 작성' 문구 그대로)
+  제목  [Artience] [<이번 주 구분>] 2026 W<nn> GMO D2C Pacing Report
+  본문  이번 주 구분(MX/CE, 최신 취합본이 W<nn> 인 쪽) · 첨부 파일명 · Collection status 표 MX · CE
+        표는 각 최신 취합본의 Tracker 시트를 색 · 굵기 · 테두리까지 인라인 서식으로 옮긴다(Gmail 붙여넣기용)
+리마인드 메일
+  이번 주 구분 Tracker 에서 Note 가 Missing submission 인 법인마다 한 통.
+  다른 구분도 미제출이면 구분 없이(담당자 양식 그대로), 한쪽만이면 'MX data' / 'CE data'.
+  주차 범위 = RAW 에서 그 법인의 마지막 제출 주 다음 ~ 보고 주차-1.
+"""
+from __future__ import annotations
+
+import argparse
+import html
+import os
+from pathlib import Path
+
+import fastexcel
+import pandas as pd
+
+from common import REPORT_DIR
+from consolidate import NAME_RE, latest_file
+from tracker import TEMPLATE_SHEET, template_file
+
+DRAFT_DROP = Path(r"G:\내 드라이브\GMO_메일초안")                  # GAS(tools/gas_mail) 가 읽는 폴더
+
+NB = "\xa0"
+
+
+def bgr_to_hex(c) -> str:
+    c = int(c)
+    return f"#{c & 0xFF:02X}{(c >> 8) & 0xFF:02X}{(c >> 16) & 0xFF:02X}"
+
+
+def table_html(ws, rng: str) -> str:
+    """Excel 범위 → 인라인 서식 HTML 표 (병합 · 바탕 · 글자색 · 굵기 · 정렬 · 테두리 · 열 너비)."""
+    r = ws.Range(rng)
+    nrow, ncol = r.Rows.Count, r.Columns.Count
+    widths = [round(r.Columns(j).Width * 1.33) for j in range(1, ncol + 1)]
+    skip = set()
+    out = ['<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Aptos,Calibri,Arial;'
+           'font-size:11pt">']
+    for i in range(1, nrow + 1):
+        out.append("<tr>")
+        for j in range(1, ncol + 1):
+            if (i, j) in skip:
+                continue
+            c = r.Cells(i, j)
+            span = ""
+            if c.MergeCells:
+                ma = c.MergeArea
+                if ma.Cells(1, 1).Address != c.Address:
+                    continue
+                rs, cs = ma.Rows.Count, ma.Columns.Count
+                for a in range(rs):
+                    for b in range(cs):
+                        skip.add((i + a, j + b))
+                span = f' rowspan="{rs}" colspan="{cs}"'
+            text = c.Text or ""
+            style = [f"width:{widths[j - 1]}px", "padding:2px 6px", "white-space:nowrap"]
+            if c.Interior.Pattern != -4142:
+                style.append(f"background:{bgr_to_hex(c.Interior.Color)}")
+            style.append(f"color:{bgr_to_hex(c.Font.Color)}")
+            if c.Font.Bold:
+                style.append("font-weight:bold")
+            style.append({-4108: "text-align:center", -4152: "text-align:right"}.get(c.HorizontalAlignment,
+                                                                                      "text-align:left"))
+            for k, side in ((7, "left"), (8, "top"), (9, "bottom"), (10, "right")):   # 변마다 그대로
+                b = c.Borders(k)
+                if b.LineStyle not in (-4142, None):
+                    style.append(f"border-{side}:1px solid {bgr_to_hex(b.Color)}")
+            out.append(f'<td{span} style="{";".join(style)}">{html.escape(text) or "&nbsp;"}</td>')
+        out.append("</tr>")
+    out.append("</table>")
+    return "".join(out)
+
+
+def tracker_tables() -> dict:
+    """{'MX': (주차, 파일, 표 html, Tracker df), 'CE': …} — 각 최신 취합본."""
+    import pythoncom
+    import win32com.client
+    res = {}
+    pythoncom.CoInitialize()
+    xl = win32com.client.DispatchEx("Excel.Application")
+    xl.Visible = False
+    xl.DisplayAlerts = False
+    try:
+        for kind in ("MX", "CE"):
+            f = latest_file(kind)
+            if not f:
+                continue
+            wb = xl.Workbooks.Open(str(f), ReadOnly=True)
+            try:
+                ws = wb.Worksheets("Tracker")
+                last = ws.Cells(ws.Rows.Count, 2).End(-4162).Row
+                res[kind] = (int(NAME_RE.match(f.name).group(2)), f, table_html(ws, f"B3:H{last}"))
+            finally:
+                wb.Close(SaveChanges=False)
+        tpl = xl.Workbooks.Open(str(template_file()), ReadOnly=True)
+        try:
+            ws = tpl.Worksheets(TEMPLATE_SHEET)
+            res["_contacts"] = {"to": str(ws.Range("C8").Value or ""),
+                                "cc": " ".join(str(ws.Range(f"C{r}").Value or "") for r in (9, 10, 11, 12))}
+        finally:
+            tpl.Close(SaveChanges=False)
+    finally:
+        xl.Quit()
+        pythoncom.CoUninitialize()
+    return res
+
+
+def tracker_df(path: Path) -> pd.DataFrame:
+    t = fastexcel.read_excel(str(path)).load_sheet("Tracker", header_row=3).to_pandas()
+    t.columns = [str(c).replace(NB, "").strip() for c in t.columns]
+    return t
+
+
+def last_week(path: Path) -> dict[str, int]:
+    """RAW 에서 법인별 마지막 제출 주차."""
+    raw = fastexcel.read_excel(str(path)).load_sheet("RAW", use_columns=["Subsidiary", "Week"]).to_pandas()
+    raw["Week"] = pd.to_numeric(raw["Week"], errors="coerce")
+    return raw.groupby("Subsidiary")["Week"].max().dropna().astype(int).to_dict()
+
+
+def missing_ranges(kind: str, path: Path, report_week: int) -> dict[str, tuple[int, int]]:
+    """Tracker 에서 최근 2주가 모두 '-' 이고 Missing submission 인 법인 → (시작 주, 끝 주).
+    2주 중 하나라도 Yes 면 리마인드하지 않는다(담당자 2026-10-20)."""
+    t = tracker_df(path)
+    lw = last_week(path)
+    week_cols = [c for c in t.columns if str(c).startswith("Week")]
+    out = {}
+    for _, r in t.iterrows():
+        note = str(r.get("Note", "")).replace(NB, "").strip()
+        any_yes = any(str(r[c]).replace(NB, "").strip() == "Yes" for c in week_cols)
+        if note == "Missing submission" and not any_yes:
+            sub = str(r["Market"]).strip()
+            out[sub] = (lw.get(sub, 0) + 1, report_week - 1)
+    return out
+
+
+def weeks_text(a: int, b: int) -> str:
+    return f"Week {a}" if a == b else f"Week {a}~{b}"
+
+
+def reminder_body(sub: str, ranges: dict[str, tuple[int, int]]) -> str:
+    """담당자 양식(2026-10-20): 구분별 Status 줄. ranges = {'MX': (a, b), 'CE': (a, b)} 중 미제출인 것."""
+    kinds = ", ".join(ranges)                                   # 'MX, CE' / 'CE'
+    lo, hi = min(v[0] for v in ranges.values()), max(v[1] for v in ranges.values())
+    status = chr(10).join(f"{k} : [{weeks_text(*v)}] currently pending" for k, v in ranges.items())
+    return f"""Dear {sub} Team,
+I would like to kindly remind you that the {kinds} data for {weeks_text(lo, hi)} has not been received.
+Please ensure that the reports are submitted according to the following requirements:
+
+Submission Requirement:
+Frequency: Weekly
+Data Range: Up to the preceding Sunday
+Status:
+{status}
+
+Please share the missing files at your earliest convenience to avoid any further gaps.
+Best regards,
+Gyeom"""
+
+
+def build(week: int) -> Path:
+    tabs = tracker_tables()
+    kinds = [k for k in ("MX", "CE") if k in tabs]
+    this = next((k for k in kinds if tabs[k][0] == week), None)
+    parts = ['<html><head><meta charset="utf-8"><title>메일 W%d</title>'
+             '<style>body{font-family:Aptos,Calibri,Arial;font-size:11pt;max-width:1100px;margin:24px auto;'
+             'padding:0 16px}.box{border:1px dashed #999;padding:16px;margin:12px 0}.meta{color:#666;font-size:10pt}'
+             'h2{font-size:13pt;margin-top:32px}</style></head><body>' % week]
+    # ---- 주간 메일
+    label = this or "MX/CE"
+    subject = f"[Artience] [{label}] 2026 W{week} GMO D2C Pacing Report"
+    c = tabs.get("_contacts", {})
+    parts.append("<h2>① 주간 메일 — 이 스레드에 회신</h2>")
+    parts.append(f'<p class="meta">제목: <b>{html.escape(subject)}</b><br>받는 사람: {html.escape(c.get("to", ""))}'
+                 f'<br>참조: {html.escape(c.get("cc", ""))}<br>아래 점선 안을 그대로 복사 → Gmail 에 붙여넣기</p>')
+    # 담당자 실제 양식(2026-10-20)
+    body = ["Dear PCG Team,<br>This is Gyeom Heo from Artience.<br><br>",
+            f"I am sharing the W{week} Weekly Raw Ad Platform Report.<br>",
+            (f"for this week’s update, only the {this} data has been included.<br>" if this else ""),
+            f"{NB}<br>{NB}1) Attached File (CPCex Attached)<br>",
+            (f"{html.escape(tabs[this][1].name)}<br>" if this else ""),
+            f"{NB}2) Collection status<br>"]
+    if this:                                       # 격주로 그 주 구분 표 하나 (홀수 주 CE, 짝수 주 MX)
+        body.append(tabs[this][2])
+    body.append("<br>Please let me know if you have any questions or require further information regarding this "
+                f"{NB}report.<br><br>Best Regards<br>Gyeom")
+    main_html = "".join(body)
+    parts.append('<div class="box" id="main">' + main_html + "</div>")
+    reminders = []
+    # ---- 리마인드
+    parts.append("<h2>② 리마인드 메일 — 미제출 법인별</h2>")
+    if not this:
+        parts.append(f"<p>W{week} 취합본이 없어 리마인드를 만들지 않음</p>")
+    else:
+        # 그 주 구분만(담당자 2026-10-20): W43(CE 주)이면 CE 미제출 법인 · CE 범위만.
+        # 끝 주 = 이번 주-1 (지난 일요일까지), 시작 주 = 그 법인의 마지막 제출 주 + 1
+        pend = {this: missing_ranges(this, tabs[this][1], week)}
+        subs = list(dict.fromkeys([s_ for k in ("MX", "CE") for s_ in pend.get(k, {})]))
+        if not subs:
+            parts.append("<p>미제출 법인 없음</p>")
+        for sub in subs:
+            ranges = {k: pend[k][sub] for k in ("MX", "CE") if sub in pend.get(k, {})}
+            text = reminder_body(sub, ranges)
+            subj = f"[Reminder] {sub} Weekly Report — " + " / ".join(f"{k} {weeks_text(*v)}" for k, v in ranges.items())
+            reminders.append({"market": sub, "subject": subj, "text": text})
+            rid = f"r{len(reminders)}"
+            parts.append(f'<p class="meta">{html.escape(sub)} — 제목: <b>{html.escape(subj)}</b> '
+                         f'<button onclick="cp(&quot;{rid}&quot;)">본문 복사</button></p>'
+                         f'<div class="box" id="{rid}" style="white-space:pre-wrap">{html.escape(text)}</div>')
+    parts.append("<script>function cp(id){var r=document.createRange();"
+                 "r.selectNodeContents(document.getElementById(id));var s=getSelection();s.removeAllRanges();"
+                 "s.addRange(r);document.execCommand('copy');s.removeAllRanges();}"
+                 "</script></body></html>")
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    out = REPORT_DIR / f"메일_W{week}.html"
+    out.write_text("".join(parts), encoding="utf-8")
+    import json
+    payload = json.dumps({"week": week, "kind": this, "subject": subject, "html": main_html,
+                          "thread_query": THREAD_QUERY, "reminders": reminders}, ensure_ascii=False, indent=1)
+    (REPORT_DIR / f"메일_W{week}.json").write_text(payload, encoding="utf-8")
+    if DRAFT_DROP.parent.exists():               # GAS 자동 초안용(설정했을 때만 동작) — 내 드라이브
+        DRAFT_DROP.mkdir(exist_ok=True)
+        (DRAFT_DROP / f"메일_W{week}.json").write_text(payload, encoding="utf-8")
+    return out
+
+
+THREAD_URL = "https://mail.google.com/mail/u/0/#sent/KtbxLwHDjdztLxrkJqtLRHgMdBlCNnDdwg"   # PCG + 삼성 공유 스레드
+THREAD_QUERY = 'in:sent subject:"GMO D2C Pacing Report"'       # GAS 가 같은 스레드를 찾는 검색어(가장 최근)
+
+
+def copy_html_to_clipboard(fragment: str) -> None:
+    """Windows 클립보드에 HTML(CF_HTML) + 글자로 — Gmail 에 Ctrl+V 하면 표 서식이 그대로 들어간다."""
+    import re
+    import win32clipboard
+    crlf = chr(13) + chr(10)
+    head = crlf.join(["Version:0.9", "StartHTML:{0:010d}", "EndHTML:{1:010d}",
+                      "StartFragment:{2:010d}", "EndFragment:{3:010d}", ""])
+    pre = '<html><body><!--StartFragment-->'
+    post = "<!--EndFragment--></body></html>"
+    dummy = head.format(0, 0, 0, 0)
+    start_html = len(dummy.encode("utf-8"))
+    start_frag = start_html + len(pre.encode("utf-8"))
+    end_frag = start_frag + len(fragment.encode("utf-8"))
+    end_html = end_frag + len(post.encode("utf-8"))
+    data = head.format(start_html, end_html, start_frag, end_frag) + pre + fragment + post
+    text = re.sub(r"<br\s*/?>", chr(10), fragment)
+    text = html.unescape(re.sub(r"<[^>]+>", chr(9), text))
+    win32clipboard.OpenClipboard()
+    try:
+        win32clipboard.EmptyClipboard()
+        win32clipboard.SetClipboardData(win32clipboard.RegisterClipboardFormat("HTML Format"), data.encode("utf-8"))
+        win32clipboard.SetClipboardData(win32clipboard.CF_UNICODETEXT, text)
+    finally:
+        win32clipboard.CloseClipboard()
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--week", type=int, required=True)
+    ap.add_argument("--no-open", action="store_true")
+    ap.add_argument("--copy", action="store_true", help="주간 메일 본문을 클립보드에 넣고 Gmail 스레드를 연다")
+    a = ap.parse_args()
+    p = build(a.week)
+    print(f"■ 메일 — {p}")
+    if a.copy:
+        import json
+        import webbrowser
+        copy_html_to_clipboard(json.loads(p.with_suffix(".json").read_text(encoding="utf-8"))["html"])
+        webbrowser.open(THREAD_URL)
+        print("  ✔ 본문을 클립보드에 복사, Gmail 스레드를 열었음 → 전체 회신 → Ctrl+V (보내기는 직접)")
+    if not a.no_open:
+        os.startfile(p)  # noqa: S606

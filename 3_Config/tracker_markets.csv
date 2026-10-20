@@ -1,0 +1,23 @@
+구분,Market,Strategic,Agency,추적,고정 사유
+MX,SEC,Yes,Artience,Y,
+MX,SEAU,Yes,Artience,Y,
+MX,SEDA,Yes,Artience,Y,
+MX,SETK,Yes,Artience,Y,
+MX,SIEL,Yes,Artience,Y,
+MX,SCIC,No,Artience,Y,
+MX,SEI,No,Artience,Y,
+MX,SEIN,No,Artience,N,Stop submission
+MX,SENA,No,Artience,N,Stop submission
+MX,SEPR,No,Artience,Y,
+MX,SESAR,No,Artience,Y,
+CE,SEC,Yes,Artience,N,
+CE,SEAU,Yes,Artience,Y,
+CE,SEDA,Yes,Artience,Y,
+CE,SETK,Yes,Artience,Y,
+CE,SIEL,Yes,Artience,Y,
+CE,SCIC,No,Artience,N,Stopping investment after W18
+CE,SEI,No,Artience,Y,
+CE,SEIN,No,Artience,N,Stop submission
+CE,SENA,No,Artience,N,Stop submission
+CE,SEPR,No,Artience,Y,
+CE,SESAR,No,Artience,Y,

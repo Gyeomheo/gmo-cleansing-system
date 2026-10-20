@@ -66,7 +66,7 @@ class App(tk.Tk):
         try:  # 작업표시줄을 python 대신 앱 아이콘으로
             import ctypes
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Artience.WeeklyReport")
-            self.iconbitmap(default=str(ROOT / "assets" / "weekly_report.ico"))
+            self.iconbitmap(default=str(ROOT / "assets" / "weekly.ico"))
         except Exception:
             pass
         self.geometry("1280x800")

@@ -245,7 +245,7 @@ sequenceDiagram
   - 법인 · Strategic · Agency · 추적(Y/N) · 고정 사유 = `3_Config/tracker_markets.csv`. 추적 N(제출 안 함) = 회색 줄, 주차 비움, 사유만
   - 표 HTML 은 `Reports/Tracker_<구분>_W<nn>.html` 에도 저장 — 메일은 이걸 읽어서 Excel 없이 빠르게 만든다
 - **주간 메일** ([④ 메일]): 본문 = 그 주 구분 표 하나(홀수 주 CE, 짝수 주 MX), W · 구분 굵게, 파일명은 굵은 글머리표
-  1. 본문이 클립보드에 들어가고, 회사 Gmail(`?authuser=<회사 Gmail>`) **보낸편지함 최근 3주 'GMO Weekly Report'**(리마인드 제외, PCG 수신) 검색이 열린다
+  1. 본문이 클립보드에 들어가고, 회사 Gmail **보낸편지함 최근 3주 'GMO Weekly Report'**(리마인드 제외, PCG 수신) — 계정 · PCG 주소는 `3_Config/mail_private.json`(git 제외, 이 PC 에만) 검색이 열린다
   2. 지난주 메일 → 전체 회신 → GUI **[제목 복사]**(`[CE] 2026 W43 GMO Weekly Report`) → 본문 Ctrl+V → **보내기는 직접**
   3. 지난 메일이 아래로 인용돼 업무 기록이 한 스레드에 쌓인다. 실제 파일은 CPCex 로 따로
 - **리마인드**: `Reports/메일_W<nn>.html` 의 [본문 복사]. 그 주 구분만, 최근 2주 중 하나라도 Yes 면 제외, 범위 = 안 준 날짜가 속한 주 ~ 이번 주-1(주간 합계로 내는 법인은 마지막 행의 주까지 낸 것으로 봄). 법인별 회신 스레드는 담당자가 직접 관리(`3_Config/reminder_links.csv` 는 비워 둠 — 링크를 넣으면 [메일 열기] 버튼이 생김)

@@ -39,3 +39,7 @@ venv/
 logs/
 *.log
 cleansing_log.txt
+
+# 메일 주소 등 개인 설정 (공개 저장소에 올리지 않음)
+3_Config/mail_private.json
+3_Config/mail_settings.json

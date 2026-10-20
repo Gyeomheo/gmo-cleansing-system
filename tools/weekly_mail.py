@@ -205,11 +205,18 @@ def build(week: int) -> Path:
 # 담당자 방식: 지난주 보낸 메일에 전체 회신 + 제목만 그 주 것으로 → 본문 아래에 지난 메일이 쭉 인용돼 기록이 쌓인다.
 # 그래서 기본은 '보낸편지함에서 가장 최근 GMO Weekly Report' 검색 — 맨 위가 지난주 메일, 링크를 바꿀 필요 없음.
 # 리마인드(제목에 Reminder) 는 빼고, PCG PIC 에게 간 것, 최근 3주만(검색이 관련성순이어도 2~3통이라 바로 보인다)
-SENT_QUERY = ('in:sent subject:"GMO Weekly Report" -subject:Reminder to:<PCG 담당자 메일> '
-              'newer_than:21d')
+# 메일 주소는 공개 저장소에 두지 않는다 → 3_Config/mail_private.json (git 제외, 이 PC 에만)
+#   {"account": "<회사 Gmail>", "pcg_to": "<PCG 담당자 메일>"}  — 없으면 계정 지정 · 수신자 필터 없이 검색
+_PRIVATE = Path(__file__).resolve().parent.parent / "3_Config" / "mail_private.json"
+try:
+    _P = __import__("json").loads(_PRIVATE.read_text(encoding="utf-8"))
+except (OSError, ValueError):
+    _P = {}
+SENT_QUERY = ('in:sent subject:"GMO Weekly Report" -subject:Reminder '
+              + (f"to:{_P['pcg_to']} " if _P.get("pcg_to") else "") + 'newer_than:21d')
 # 브라우저마다 u/0 이 다른 계정일 수 있어 계정을 이름으로 지정
-MAIL_ACCOUNT = "<회사 Gmail>"
-THREAD_URL = (f"https://mail.google.com/mail/?authuser={MAIL_ACCOUNT}#search/"
+MAIL_ACCOUNT = _P.get("account", "")
+THREAD_URL = ("https://mail.google.com/mail/" + (f"?authuser={MAIL_ACCOUNT}" if MAIL_ACCOUNT else "u/0/") + "#search/"
               + __import__("urllib.parse").parse.quote_plus(SENT_QUERY))
 MAIL_SETTINGS = Path(__file__).resolve().parent.parent / "3_Config" / "mail_settings.json"
 

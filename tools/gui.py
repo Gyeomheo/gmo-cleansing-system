@@ -153,9 +153,10 @@ class App(tk.Tk):
         self.path_row(main, "원본 폴더", self.root_dir, [("폴더 선택…", self.pick)])
         self.path_row(main, "취합 폴더", tk.StringVar(value=str(DASH_DIR)), [("열기", lambda: self.open_path(None))],
                       readonly=True)
-        self.path_row(main, "Gmail 스레드", self.thread,
+        self.path_row(main, "Gmail 열 곳", self.thread,
                       [("저장", self.save_thread), ("열기", lambda: webbrowser.open(self.thread.get().strip()))])
-        tk.Label(main, text="새 스레드로 보냈으면 그 링크를 붙여 넣고 [저장] — 다음부터 ④ 메일이 그 스레드를 연다",
+        tk.Label(main, text=("기본 = 보낸편지함의 가장 최근 'GMO Weekly Report'(리마인드 제외) — "
+                             "지난주 메일에 전체 회신, 기록이 아래로 쌓임"),
                  bg=BG, fg=FAINT, font=self.f_small, anchor="w").pack(fill="x", pady=(2, 0))
 
         act = tk.Frame(main, bg=BG)
@@ -169,6 +170,7 @@ class App(tk.Tk):
             b = Btn(act, t, lambda fn=fn: self.start([fn]))
             b.pack(side="left", padx=(0, 6))
             self.btns.append(b)
+        Btn(act, "제목 복사", self.copy_subject, small=True).pack(side="left", padx=(4, 0))
         tk.Label(act, text="Excel 은 모두 닫고", bg=BG, fg=SUB, font=self.f_small).pack(side="left", padx=8)
         srow = tk.Frame(main, bg=BG)
         srow.pack(fill="x", pady=(0, 6))
@@ -285,8 +287,9 @@ class App(tk.Tk):
             ("취합 검증", "최신 취합본 RAW 기준 · 법인별 교체 · 검증 12항목",
              check.exists() and f"W{w}_" in check.read_text(encoding="utf-8", errors="ignore")),
             ("취합본 만들기", (f.name if made else "새 버전 생성 · 이전 것은 old RAW files · Tracker"), made),
-            ("메일", "본문 → 클립보드 + Gmail 스레드 열기 · 리마인드 HTML", (REPORT_DIR / f"메일_W{w}.json").exists()),
-            ("보내기 (사람)", "Gmail 전체 회신 → Ctrl+V → 보내기 · 파일은 CPCex", False),
+            ("메일", "본문 → 클립보드 + 지난주 보낸 메일 열기 · 리마인드 HTML",
+             (REPORT_DIR / f"메일_W{w}.json").exists()),
+            ("보내기 (사람)", "지난주 메일에 전체 회신 → [제목 복사] → 본문 Ctrl+V → 보내기 · 파일은 CPCex", False),
         ]
 
     def draw_steps(self) -> None:
@@ -325,10 +328,10 @@ class App(tk.Tk):
         """새 스레드로 보냈으면 그 링크를 붙여 넣고 저장 — 다음부터 [④ 메일] 이 이 스레드를 연다."""
         url = self.thread.get().strip()
         if not url.startswith("https://mail.google.com/"):
-            messagebox.showwarning("Gmail 스레드", "Gmail 주소(https://mail.google.com/…)를 붙여 넣으세요.")
+            messagebox.showwarning("Gmail", "Gmail 주소(https://mail.google.com/…)를 붙여 넣으세요.")
             return
         save_thread_url(url)
-        self.status.set("✔ Gmail 스레드 링크 저장")
+        self.status.set("✔ Gmail 열 곳 저장")
 
     def open_path(self, p: Path | None) -> None:
         p = DASH_DIR if p is None else p
@@ -379,6 +382,18 @@ class App(tk.Tk):
         """주간 메일 본문 → 클립보드 + Gmail 스레드 열기, 리마인드는 HTML 에서 [본문 복사]. 보내기는 직접."""
         self.status.set("④ 메일 만드는 중…")
         return self.call([str(ROOT / "tools" / "weekly_mail.py"), "--week", str(self.week()), "--copy"]) == 0
+
+    def copy_subject(self) -> None:
+        """그 주 메일 제목 → 클립보드 (회신 창 제목 칸에 붙여넣기)."""
+        import json
+        f = REPORT_DIR / f"메일_W{self.week()}.json"
+        if not f.exists():
+            messagebox.showinfo("제목 복사", "먼저 ④ 메일을 실행하세요.")
+            return
+        subj = json.loads(f.read_text(encoding="utf-8"))["subject"]
+        self.clipboard_clear()
+        self.clipboard_append(subj)
+        self.status.set(f"✔ 제목 복사: {subj}")
 
     def run_all(self) -> None:
         self.start([self.step_clean, self.step_check, self.step_make, self.step_mail])

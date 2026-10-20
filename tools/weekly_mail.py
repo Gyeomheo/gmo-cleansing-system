@@ -190,7 +190,15 @@ def build(week: int) -> Path:
     return out
 
 
-THREAD_URL = "https://mail.google.com/mail/u/0/#sent/KtbxLwHDjdztLxrkJqtLRHgMdBlCNnDdwg"   # 처음 받은 공유 스레드
+# 담당자 방식: 지난주 보낸 메일에 전체 회신 + 제목만 그 주 것으로 → 본문 아래에 지난 메일이 쭉 인용돼 기록이 쌓인다.
+# 그래서 기본은 '보낸편지함에서 가장 최근 GMO Weekly Report' 검색 — 맨 위가 지난주 메일, 링크를 바꿀 필요 없음.
+# 리마인드(제목에 Reminder) 는 빼고, PCG PIC 에게 간 것, 최근 3주만(검색이 관련성순이어도 2~3통이라 바로 보인다)
+SENT_QUERY = ('in:sent subject:"GMO Weekly Report" -subject:Reminder to:<PCG 담당자 메일> '
+              'newer_than:21d')
+# 브라우저마다 u/0 이 다른 계정일 수 있어 계정을 이름으로 지정
+MAIL_ACCOUNT = "<회사 Gmail>"
+THREAD_URL = (f"https://mail.google.com/mail/?authuser={MAIL_ACCOUNT}#search/"
+              + __import__("urllib.parse").parse.quote_plus(SENT_QUERY))
 MAIL_SETTINGS = Path(__file__).resolve().parent.parent / "3_Config" / "mail_settings.json"
 
 
@@ -248,8 +256,21 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--week", type=int, required=True)
     ap.add_argument("--no-open", action="store_true")
-    ap.add_argument("--copy", action="store_true", help="주간 메일 본문을 클립보드에 넣고 Gmail 스레드를 연다")
+    ap.add_argument("--copy", action="store_true", help="본문을 클립보드에 넣고 지난주 보낸 메일(검색)을 연다")
+    ap.add_argument("--copy-subject", action="store_true", help="제목만 클립보드에")
     a = ap.parse_args()
+    if a.copy_subject:
+        import json
+        import win32clipboard
+        subj = json.loads((REPORT_DIR / f"메일_W{a.week}.json").read_text(encoding="utf-8"))["subject"]
+        win32clipboard.OpenClipboard()
+        try:
+            win32clipboard.EmptyClipboard()
+            win32clipboard.SetClipboardData(win32clipboard.CF_UNICODETEXT, subj)
+        finally:
+            win32clipboard.CloseClipboard()
+        print(f"  ✔ 제목 복사: {subj}")
+        raise SystemExit(0)
     p = build(a.week)
     print(f"■ 메일 — {p}")
     if a.copy:
@@ -257,6 +278,7 @@ if __name__ == "__main__":
         import webbrowser
         copy_html_to_clipboard(json.loads(p.with_suffix(".json").read_text(encoding="utf-8"))["html"])
         webbrowser.open(thread_url())
-        print("  ✔ 본문을 클립보드에 복사, Gmail 스레드를 열었음 → 전체 회신 → Ctrl+V (보내기는 직접)")
+        print("  ✔ 본문을 클립보드에 복사, 보낸편지함의 지난주 메일 검색을 열었음")
+        print("    맨 위 메일 → 전체 회신 → 제목은 GUI [제목 복사] 로 바꾸기 → 본문 Ctrl+V → 보내기(직접)")
     if not a.no_open:
         os.startfile(p)  # noqa: S606

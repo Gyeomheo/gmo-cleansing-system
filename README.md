@@ -66,10 +66,11 @@ Excel 에서 매핑 엑셀 · 마스터 CSV 를 열어 두면 점검에서 멈�
   최근 2주(보고 W 이면 W-2 · W-1) Yes / -, 두 주 모두 - 면 Uncollected True, Note = 고정 사유 또는 Missing submission.
   법인 · Strategic · 추적(Y/N) · 고정 사유 = `3_Config/tracker_markets.csv`. 추적 N(제출 안 함) = 회색 줄, 주차 비움, 사유만.
   파일의 `고정 사유` 칸에 적으면 다음 주 취합본으로 이어짐. 취합본을 만들 때 자동(`tools/tracker.py`)
-- **[④ 메일]** (`tools/weekly_mail.py --week nn --copy`): 주간 메일 본문(그 주 구분 표 하나 — 홀수 주 CE, 짝수 주 MX)을 클립보드에 넣고 PCG 공유 Gmail 스레드를 연다
-  → 전체 회신 → Ctrl+V. 리마인드(**그 주 구분만** — W43 이면 CE, 최근 2주 모두 '-' 인 법인만(하나라도 Yes 면 제외), 끝 주 = 이번 주-1, 시작 = **안 준 날짜가 속한 주** — 마지막 데이터 다음 날 기준, 주간 합계 법인은 마지막 주를 다 낸 것으로)는 `Reports/메일_W<nn>.html` 의 [본문 복사].
-  **보내기는 직접.** 실제 파일은 CPCex 로 따로.
-  스레드 링크는 GUI 의 **Gmail 스레드** 칸 — 새 스레드로 보냈으면 그 링크를 붙여 넣고 [저장](`3_Config/mail_settings.json`).
+- **[④ 메일]** (`tools/weekly_mail.py --week nn --copy`): 본문(그 주 구분 표 하나 — 홀수 주 CE, 짝수 주 MX)을 클립보드에 넣고
+  회사 Gmail(`?authuser=<회사 Gmail>`)의 **보낸편지함 최근 3주 'GMO Weekly Report'**(리마인드 제외, PCG 수신)를 연다.
+  지난주 메일 → 전체 회신 → GUI **[제목 복사]**(`[CE] 2026 W43 GMO Weekly Report`) → 본문 Ctrl+V → **보내기는 직접**.
+  지난 메일이 아래로 인용돼 업무 기록이 쌓인다. 실제 파일은 CPCex 로 따로.
+  리마인드(그 주 구분만, 최근 2주 모두 '-', 범위 = 안 준 날짜가 속한 주 ~ 이번 주-1)는 `Reports/메일_W<nn>.html` 의 [본문 복사].
 - 자동 초안(선택): `tools/gas_mail/Code.gs` 를 Apps Script 에 넣고 `dryRun` → `installTrigger`. 이후 [④ 메일] 때마다 5분 안에
   그 스레드에 회신 초안 · 리마인드 초안이 생김(`내 드라이브/GMO_메일초안/` 경유)
 

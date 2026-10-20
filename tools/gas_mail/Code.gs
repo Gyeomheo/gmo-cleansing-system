@@ -2,7 +2,7 @@
  *
  * 흐름: GUI [④ 메일] → 파이썬이 '내 드라이브/GMO_메일초안/메일_W<nn>.json' 저장
  *       → 이 스크립트(5분마다)가 파일을 읽어 Gmail 초안을 만들고 파일을 '처리됨' 으로 옮긴다
- *   · 주간 메일: 검색어(thread_query, 기본 in:sent 제목 "GMO D2C Weekly Report" 또는 옛 "Pacing Report") 로 찾은 가장 최근 스레드에
+ *   · 주간 메일: 검색어(thread_query, 기본 in:sent 제목 "GMO Weekly Report" 또는 옛 제목) 로 찾은 가장 최근 스레드에
  *               '전체 회신' 초안 (본문 = Collection status 표 포함 HTML)
  *   · 리마인드: 법인별 새 초안(받는 사람은 비워 둠 — 초안에서 넣고 보낸다)
  *
@@ -22,7 +22,7 @@ function folder_(name, parent) {
 }
 
 function thread_(query) {
-  var ts = GmailApp.search(query || 'in:sent (subject:"GMO D2C Weekly Report" OR subject:"GMO D2C Pacing Report")', 0, 1);
+  var ts = GmailApp.search(query || 'in:sent (subject:"GMO Weekly Report" OR subject:"GMO D2C Weekly Report" OR subject:"GMO D2C Pacing Report")', 0, 1);
   return ts.length ? ts[0] : null;
 }
 

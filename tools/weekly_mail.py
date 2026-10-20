@@ -3,7 +3,7 @@
     python tools/weekly_mail.py --week 43            → 2_Output/Reports/메일_W43.html (브라우저로 열림)
 
 주간 메일(메일 양식 시트 '3. 메일 작성' 문구 그대로)
-  제목  [<이번 주 구분>] 2026 W<nn> GMO D2C Weekly Report   (담당자 2026-10-20)
+  제목  [<이번 주 구분>] 2026 W<nn> GMO Weekly Report   (담당자 2026-10-20)
   본문  이번 주 구분(MX/CE, 최신 취합본이 W<nn> 인 쪽) · 첨부 파일명 · Collection status 표 MX · CE
         표는 각 최신 취합본의 Tracker 시트를 색 · 굵기 · 테두리까지 인라인 서식으로 옮긴다(Gmail 붙여넣기용)
 리마인드 메일
@@ -133,7 +133,7 @@ def build(week: int) -> Path:
              'h2{font-size:13pt;margin-top:32px}</style></head><body>' % week]
     # ---- 주간 메일
     label = this or "MX/CE"
-    subject = f"[{label}] 2026 W{week} GMO D2C Weekly Report"
+    subject = f"[{label}] 2026 W{week} GMO Weekly Report"
     c = tabs.get("_contacts", {})
     parts.append("<h2>① 주간 메일 — 이 스레드에 회신</h2>")
     parts.append(f'<p class="meta">제목: <b>{html.escape(subject)}</b><br>받는 사람: {html.escape(c.get("to", ""))}'
@@ -214,7 +214,8 @@ def save_thread_url(url: str) -> None:
     data["thread_url"] = url.strip()
     MAIL_SETTINGS.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
 # GAS 가 같은 스레드를 찾는 검색어(가장 최근) — 새 제목 · 옛 제목 둘 다
-THREAD_QUERY = 'in:sent (subject:"GMO D2C Weekly Report" OR subject:"GMO D2C Pacing Report")'
+THREAD_QUERY = ('in:sent (subject:"GMO Weekly Report" OR subject:"GMO D2C Weekly Report" '
+                'OR subject:"GMO D2C Pacing Report")')
 
 
 def copy_html_to_clipboard(fragment: str) -> None:

@@ -24,6 +24,13 @@ PRODUCT_MX_EXCEL = CONFIG_DIR / "product_mapping_MX.xlsx"
 PRODUCT_CE_EXCEL = CONFIG_DIR / "product_mapping_CE.xlsx"
 
 MEDIA_MAP_JSON = CONFIG_DIR / "media_mapping.json"
+
+# 캠페인명 역추적 규칙 (src/campaign.py). 파일이 없으면 보정 안 함
+CAMPAIGN_RULES_EXCEL = CONFIG_DIR / "campaign_rules.xlsx"
+CAMPAIGN_BACKTRACE = True
+
+# D2C 미디어 표준표 (src/media_std.py). 표에 없는 미디어는 Others, 원본은 Media Platform (Raw) 에만
+MEDIA_TAXONOMY = CONFIG_DIR / "media_taxonomy.csv"
 PRODUCT_MX_JSON = CONFIG_DIR / "product_mapping_MX.json"
 PRODUCT_CE_JSON = CONFIG_DIR / "product_mapping_CE.json"
 
@@ -41,6 +48,9 @@ MASTER_FILES = {
 COL_BU = 'BU'
 COL_SUB = 'Subsidiary'
 COL_DATE = 'Date'
+
+# 이 날짜 이전 행은 버린다 (2026-10-20 담당자: 26년도만 트래킹)
+MIN_DATE = '2026-01-01'
 
 # 삭제할 키워드 (소문자 기준)
 IGNORE_KEYWORDS = ['smartphones']

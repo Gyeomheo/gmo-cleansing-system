@@ -29,6 +29,8 @@ try:
         insert_cleaned_left_of_raw,
         sanitize_column_headers 
     )
+    from src.campaign import load_rules as load_campaign_rules, apply_campaign_rules
+    from src.media_std import load_taxonomy, standardize_media
     from src.reporting import create_change_summary, save_to_csv_separated, save_unmapped_reports
 
 except ImportError as e:
@@ -38,6 +40,11 @@ except ImportError as e:
 # =========================================================
 # 2. 로깅 설정
 # =========================================================
+# [Windows Fix] VS Code Task 등 파이프 출력 시 콘솔 인코딩이 cp949로 잡혀
+# 이모지(📊, ✅ 등) 출력에서 UnicodeEncodeError가 발생하는 것을 방지
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -97,14 +104,23 @@ def build_unmapped_product_rows(df_source: pd.DataFrame, unmapped_df: pd.DataFra
     df_out = df_out[output_cols].drop_duplicates().reset_index(drop=True)
     return df_out
 
+# --remap: 매핑을 고친 뒤 다시 돌릴 때.
+# 숫자가 같아도 새 파일 첫 날부터 마스터를 교체한다. --remap=SEPR,SETK 는 그 법인만.
+_remap_arg = next((a for a in sys.argv if a.startswith('--remap')), '')
+REMAP = (set(_remap_arg.split('=', 1)[1].upper().split(','))
+         if '=' in _remap_arg else bool(_remap_arg))
+
+
 def main_workflow():
     logging.info("="*60)
+    if REMAP:
+        logging.info(f" 🔁 --remap: 입력 기간 전체를 마스터에 다시 씀 ({REMAP})")
     logging.info(" 🚀 GMO 데이터 자동화 시스템 (Integration Final Build) 가동")
     logging.info("="*60)
 
     try:
         # =========================================================
-        # 1. 매핑 테이블 로드
+        # 1. 매핑 테이블
         # =========================================================
         logging.info("⚙️ 매핑 테이블 로드 및 초기화 중...")
         
@@ -115,6 +131,9 @@ def main_workflow():
         df_map_media = load_map_from_json(config.MEDIA_MAP_JSON, config.MEDIA_COLS_MAP)
         df_map_mx = load_map_from_json(config.PRODUCT_MX_JSON, config.PRODUCT_COLS_MAP_MX)
         df_map_ce = load_map_from_json(config.PRODUCT_CE_JSON, config.PRODUCT_COLS_MAP_CE)
+        df_camp = (load_campaign_rules(config.CAMPAIGN_RULES_EXCEL)
+                   if config.CAMPAIGN_BACKTRACE else pd.DataFrame())
+        df_tax = load_taxonomy(config.MEDIA_TAXONOMY)
 
         # =========================================================
         # 2. 파일 스캔 (Pathlib 활용)
@@ -122,6 +141,8 @@ def main_workflow():
         # [Refactor] glob.glob 대신 pathlib.glob 사용
         all_raw_files = list(config.INPUT_DIR.glob('*.csv'))
         
+        for stale in config.OUTPUT_DIR.glob("_이번실행_*.csv"):
+            stale.unlink()                      # 지난 실행분이 이번 것처럼 취합되지 않게
         if not all_raw_files:
             logging.warning(f"📂 {config.INPUT_DIR} 폴더가 비어있습니다. CSV 파일을 넣어주세요.")
             return
@@ -170,6 +191,8 @@ def main_workflow():
                     df_raw, df_map_media, config.MEDIA_COLS_MAP, is_media=True
                 )
                 total_unmapped_media.update(df_unmapped_media['Unmapped_Key'].tolist())
+                # 미디어 표준표 검사 (기존 매핑 결과 위에 + 알파)
+                df_cleaned_step1, summary_mstd = standardize_media(df_cleaned_step1, df_tax)
 
                 # BU 컬럼 존재 여부로 분기 (Config 상수 사용)
                 if config.COL_BU in df_raw.columns:
@@ -179,6 +202,9 @@ def main_workflow():
                         df_cleaned_step1, df_map_ce, config.PRODUCT_COLS_MAP_CE
                     )
                     unmapped_key_source_col = 'Product Category'
+                    df_cleaned_step2, summary_camp = apply_campaign_rules(
+                        df_cleaned_step2, 'CE', df_camp
+                    )
                     
                     df_cleaned_final = assign_ce_division(
                         df_cleaned_step2, df_raw_original, config.DIV_RULES, config.AMBIGUOUS_CATS      
@@ -205,7 +231,9 @@ def main_workflow():
                         df_cleaned_step1, df_map_mx, config.PRODUCT_COLS_MAP_MX
                     )
                     unmapped_key_source_col = 'Products'
-                    df_cleaned_final = df_cleaned_step2.copy()
+                    df_cleaned_final, summary_camp = apply_campaign_rules(
+                        df_cleaned_step2, 'MX', df_camp
+                    )
                     df_cleaned_final[config.COL_BU] = 'MX'
                     
                     df_cleaned_final = process_mindset_column(df_cleaned_final, 'Mindset')
@@ -221,6 +249,9 @@ def main_workflow():
                     key_source_col=unmapped_key_source_col
                 )
                 if not df_unmapped_prod_rows.empty:
+                    # 매핑 등록 도구(tools/mapping.py)가 어느 매핑 엑셀에 넣을지 알도록
+                    is_ce = unmapped_key_source_col == 'Product Category'
+                    df_unmapped_prod_rows['Division'] = 'CE' if is_ce else 'MX'
                     total_unmapped_prod_rows.append(df_unmapped_prod_rows)
                 
                 # (D) 개별 파일 저장
@@ -241,7 +272,9 @@ def main_workflow():
                 df_to_save = {
                     "Cleaned_Result": df_save,
                     "Summary_Prod": summary_prod,
-                    "Summary_Media": summary_media
+                    "Summary_Media": summary_media,
+                    "Summary_Campaign": summary_camp,
+                    "Summary_MediaStd": summary_mstd
                 }
                 save_to_csv_separated(df_to_save, output_base_path)
                 logging.info(f"   ✅ 개별 파일 저장 완료: {output_filename}")
@@ -270,12 +303,15 @@ def main_workflow():
         if collected_mx_data:
             logging.info("🔄 [Updater] MX 마스터 DB 갱신 중...")
             full_mx = pd.concat(collected_mx_data, ignore_index=True)
-            updater.update_smart_db(full_mx, "MX")
+            # 취합(tools/consolidate.py)이 쓰는 이번 실행분 — 마스터와 별개로 남긴다
+            full_mx.to_csv(config.OUTPUT_DIR / "_이번실행_MX.csv", index=False, encoding='utf-8-sig')
+            updater.update_smart_db(full_mx, "MX", remap=REMAP)
         
         if collected_ce_data:
             logging.info("🔄 [Updater] CE 마스터 DB 갱신 중...")
             full_ce = pd.concat(collected_ce_data, ignore_index=True)
-            updater.update_smart_db(full_ce, "CE")
+            full_ce.to_csv(config.OUTPUT_DIR / "_이번실행_CE.csv", index=False, encoding='utf-8-sig')
+            updater.update_smart_db(full_ce, "CE", remap=REMAP)
 
         logging.info(f"\n✨ 모든 작업 완료. 결과 폴더: {config.OUTPUT_DIR}")
 

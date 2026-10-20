@@ -115,13 +115,19 @@ def save_unmapped_reports(unmapped_prod_data, unmapped_media_set: set):
     else:
         df_prod = pd.DataFrame()
 
+    # 이번 실행에 미매핑이 없으면 지난 리포트를 지운다
+    # (남겨 두면 옛 미매핑이 현재 것처럼 보인다)
+    path_prod = report_dir / "Unmapped_Products.csv"
     if not df_prod.empty:
-        path_prod = report_dir / "Unmapped_Products.csv"
         df_prod.to_csv(path_prod, index=False, encoding="utf-8-sig")
         logging.warning(f"⚠️  [Alert] 매핑 실패 제품 {len(df_prod)}건 저장됨")
+    elif path_prod.exists():
+        path_prod.unlink()
 
+    path_media = report_dir / "Unmapped_Media.csv"
     if unmapped_media_set:
         df_media = pd.DataFrame(list(unmapped_media_set), columns=['Unmapped_Media_Key'])
-        path_media = report_dir / "Unmapped_Media.csv"
         df_media.to_csv(path_media, index=False, encoding='utf-8-sig')
         logging.warning(f"⚠️  [Alert] 매핑 실패 미디어 {len(df_media)}건 저장됨")
+    elif path_media.exists():
+        path_media.unlink()

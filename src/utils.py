@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 from typing import Union, Optional
 
+from . import config
+
 def load_csv_safely(file_path: Union[str, Path], header=0) -> Optional[pd.DataFrame]:
     """
     CSV 안전 로드 (권한 에러 방어, Path 객체 지원, 인코딩 자동 탐지)
@@ -87,7 +89,7 @@ def process_and_filter_dates(df: pd.DataFrame, date_col: str = 'Date') -> pd.Dat
             )
 
     # 4. 필터링 및 컬럼 생성
-    target_date = pd.Timestamp('2025-01-01')
+    target_date = pd.Timestamp(config.MIN_DATE)
     mask_keep = (df['__date_obj'].notna()) & (df['__date_obj'] >= target_date)
     
     dropped_count = len(df) - mask_keep.sum()

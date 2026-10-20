@@ -88,7 +88,10 @@ def get_safe_divergence_date(df_master, df_new):
                 
     return df_master['Date'].max() + timedelta(days=1)
 
-def update_smart_db(new_df: pd.DataFrame, division: str):
+def update_smart_db(new_df: pd.DataFrame, division: str, remap: bool = False):
+    """remap=True(전체) 또는 {'SEPR', ...}(그 법인만): 숫자 변화와 상관없이 새 파일의 첫 날부터 교체한다.
+    매핑만 바꾸면 숫자 합계가 같아 변경 감지가 안 되므로,
+    매핑 등록 후 재실행에 쓴다."""
     master_path = config.MASTER_FILES.get(division)
     if not master_path: return
     save_cols = new_df.columns.tolist()
@@ -141,7 +144,9 @@ def update_smart_db(new_df: pd.DataFrame, division: str):
                 logging.info(f"   ➕ [{sub}] 신규 추가")
                 continue
             
-            cutoff = get_safe_divergence_date(s_old, s_new)
+            sub_remap = remap is True or (isinstance(remap, set) and sub.upper() in remap)
+            cutoff = (s_new['Date'].min() if sub_remap
+                      else get_safe_divergence_date(s_old, s_new))
             
             final_dfs.append(s_old[s_old['Date'] < cutoff])
             final_dfs.append(s_new[s_new['Date'] >= cutoff])

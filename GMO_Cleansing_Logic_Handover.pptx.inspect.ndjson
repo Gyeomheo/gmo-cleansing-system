@@ -1,0 +1,164 @@
+{"kind":"deck","id":"pr/ujcc7s","name":"Deck"}
+{"kind":"layout","layoutId":"fccb43c5-f405-4ff4-8ad3-0ab1614f4645","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"ac7c7d33-9f2b-49f1-85d9-edfb95bab4ec","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/dg3tdk","slide":1,"title":"GMO Cleansing","textShapes":9}
+{"kind":"textbox","id":"sh/7qpg3ex0","slide":1,"text":"GMO Cleansing\nLogic Handover","textPreview":"GMO Cleansing | Logic Handover","textChars":28,"textLines":2,"bbox":[76,158,780,160]}
+{"kind":"textbox","id":"sh/0bi9s36h","slide":1,"text":"운영 위치: C:\\GMO_CLEANSING\n입력 CSV, 매핑 Excel, 클렌징 결과, 마스터 DB 갱신 로직 인수인계","textPreview":"운영 위치: C:\\GMO_CLEANSING | 입력 CSV, 매핑 Excel, 클렌징 결과, 마스터 DB 갱신 로직 인수인계","textChars":67,"textLines":2,"bbox":[80,410,660,88]}
+{"kind":"shape","id":"sh/pwb2hwfy","slide":1,"bbox":[832,154,330,96]}
+{"kind":"shape","id":"sh/ed8v6psf","slide":1,"bbox":[832,154,6,96]}
+{"kind":"textbox","id":"sh/7y1kre1w","slide":1,"text":"진입점","textPreview":"진입점","textChars":3,"textLines":1,"bbox":[854,174,286,30]}
+{"kind":"textbox","id":"sh/wjudg7ad","slide":1,"text":"run.py / main_workflow()","textPreview":"run.py / main_workflow()","textChars":24,"textLines":1,"bbox":[854,212,286,24]}
+{"kind":"shape","id":"sh/p4r65wju","slide":1,"bbox":[832,282,330,96]}
+{"kind":"shape","id":"sh/ih4byhgn","slide":1,"bbox":[832,282,6,96]}
+{"kind":"textbox","id":"sh/72x4nap4","slide":1,"text":"핵심 모듈","textPreview":"핵심 모듈","textChars":5,"textLines":1,"bbox":[854,302,286,30]}
+{"kind":"textbox","id":"sh/zqtcj6to","slide":1,"text":"src/pipeline.py, updater.py","textPreview":"src/pipeline.py, updater.py","textChars":27,"textLines":1,"bbox":[854,340,286,24]}
+{"kind":"shape","id":"sh/65wjudg7","slide":1,"bbox":[832,410,330,96]}
+{"kind":"shape","id":"sh/hwfyxobm","slide":1,"bbox":[832,410,6,96]}
+{"kind":"textbox","id":"sh/obm58z25","slide":1,"text":"산출물","textPreview":"산출물","textChars":3,"textLines":1,"bbox":[854,430,286,30]}
+{"kind":"textbox","id":"sh/zed8v6ps","slide":1,"text":"2_Output, TOTAL_MASTER_*.csv","textPreview":"2_Output, TOTAL_MASTER_*.csv","textChars":28,"textLines":1,"bbox":[854,468,286,24]}
+{"kind":"textbox","id":"sh/6xkf6dcb","slide":1,"text":"2026-06-22","textPreview":"2026-06-22","textChars":10,"textLines":1,"bbox":[80,612,280,28]}
+{"kind":"notes","id":"nt/dg3tdk","slide":1,"text":""}
+{"kind":"slide","id":"sl/h7rx3y","slide":2,"title":"GMO Cleansing System","textShapes":9}
+{"kind":"textbox","id":"sh/byhgn29g","slide":2,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/0je9cvix","slide":2,"text":"시스템이 하는 일","textPreview":"시스템이 하는 일","textChars":9,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/t47y1kre","slide":2,"bbox":[64,145,1152,1]}
+{"kind":"shape","id":"sh/il0rqd4v","slide":2,"bbox":[76,196,338,300]}
+{"kind":"shape","id":"sh/b6xkf6dc","slide":2,"bbox":[76,196,6,300]}
+{"kind":"textbox","id":"sh/0rqd4vmt","slide":2,"text":"목적","textPreview":"목적","textChars":2,"textLines":1,"bbox":[98,216,294,30]}
+{"kind":"textbox","id":"sh/tcj6tova","slide":2,"text":"여러 Subsidiary CSV를 같은 기준으로 정규화하고, 미디어/제품 매핑을 적용해 마스터 DB에 누적합니다.","textPreview":"여러 Subsidiary CSV를 같은 기준으로 정규화하고, 미디어/제품 매핑을 적용해 마스터 DB에 누적합니다.","textChars":63,"textLines":1,"bbox":[98,254,294,228]}
+{"kind":"shape","id":"sh/ixczed8v","slide":2,"bbox":[470,196,338,300]}
+{"kind":"shape","id":"sh/bi9s36hc","slide":2,"bbox":[470,196,6,300]}
+{"kind":"textbox","id":"sh/rytsvu9k","slide":2,"text":"처리 단위","textPreview":"처리 단위","textChars":5,"textLines":1,"bbox":[492,216,294,30]}
+{"kind":"textbox","id":"sh/yd0z6103","slide":2,"text":"1_Input 폴더의 CSV를 하나씩 처리합니다. 파일 단위 오류는 로그를 남기고 다음 파일로 넘어갑니다.","textPreview":"1_Input 폴더의 CSV를 하나씩 처리합니다. 파일 단위 오류는 로그를 남기고 다음 파일로 넘어갑니다.","textChars":59,"textLines":1,"bbox":[492,254,294,228]}
+{"kind":"shape","id":"sh/90je9cvi","slide":2,"bbox":[864,196,338,300]}
+{"kind":"shape","id":"sh/gfmlkjm1","slide":2,"bbox":[864,196,6,300]}
+{"kind":"textbox","id":"sh/rmhk3q5o","slide":2,"text":"최종 결과","textPreview":"최종 결과","textChars":5,"textLines":1,"bbox":[886,216,294,30]}
+{"kind":"textbox","id":"sh/y1kre1w7","slide":2,"text":"개별 cleaned CSV, 변경 요약, 미매핑 리포트, TOTAL_MASTER_MX/CE를 생성 또는 갱신합니다.","textPreview":"개별 cleaned CSV, 변경 요약, 미매핑 리포트, TOTAL_MASTER_MX/CE를 생성 또는 갱신합니다.","textChars":64,"textLines":1,"bbox":[886,254,294,228]}
+{"kind":"textbox","id":"sh/9s36hcrm","slide":2,"text":"운영자가 매번 확인해야 하는 기준은 입력 CSV, 3_Config 매핑 Excel, cleansing_log.txt, Reports 미매핑 파일입니다.","textPreview":"운영자가 매번 확인해야 하는 기준은 입력 CSV, 3_Config 매핑 Excel, cleansing_log.txt, Reports 미매핑 파일입니다.","textChars":84,"textLines":1,"bbox":[92,560,1060,42]}
+{"kind":"notes","id":"nt/h7rx3y","slide":2,"text":""}
+{"kind":"slide","id":"sl/6dplfu","slide":3,"title":"GMO Cleansing System","textShapes":18}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":3,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":3,"text":"전체 실행 흐름","textPreview":"전체 실행 흐름","textChars":8,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/5wjudg7a","slide":3,"bbox":[64,145,1152,1]}
+{"kind":"shape","id":"sh/yhgn29gr","slide":3,"bbox":[76,258,205,188]}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":3,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[98,278,60,46]}
+{"kind":"textbox","id":"sh/gn29gr2p","slide":3,"text":"매핑 로드","textPreview":"매핑 로드","textChars":5,"textLines":1,"bbox":[98,336,160,42]}
+{"kind":"textbox","id":"sh/58z25kb6","slide":3,"text":"Excel -> JSON 캐시\nmedia / MX / CE","textPreview":"Excel -> JSON 캐시 | media / MX / CE","textChars":32,"textLines":2,"bbox":[98,386,160,46]}
+{"kind":"shape","id":"sh/ytsvu9kn","slide":3,"bbox":[324,258,205,188]}
+{"kind":"textbox","id":"sh/neloj2t8","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[346,278,60,46]}
+{"kind":"textbox","id":"sh/nap4r65w","slide":3,"text":"CSV 스캔","textPreview":"CSV 스캔","textChars":6,"textLines":1,"bbox":[346,336,160,42]}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":3,"text":"1_Input/*.csv\n파일별 반복","textPreview":"1_Input/*.csv | 파일별 반복","textChars":20,"textLines":2,"bbox":[346,386,160,46]}
+{"kind":"shape","id":"sh/5gbq1ory","slide":3,"bbox":[572,258,205,188]}
+{"kind":"textbox","id":"sh/cvixczed","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[594,278,60,46]}
+{"kind":"textbox","id":"sh/nyd0z610","slide":3,"text":"공통 정제","textPreview":"공통 정제","textChars":5,"textLines":1,"bbox":[594,336,160,42]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":3,"text":"헤더, 날짜, 지표,\n미디어 매핑","textPreview":"헤더, 날짜, 지표, | 미디어 매핑","textChars":18,"textLines":2,"bbox":[594,386,160,46]}
+{"kind":"shape","id":"sh/54zidony","slide":3,"bbox":[820,258,205,188]}
+{"kind":"textbox","id":"sh/cj6tovah","slide":3,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[842,278,60,46]}
+{"kind":"textbox","id":"sh/judg7ads","slide":3,"text":"분기 처리","textPreview":"분기 처리","textChars":5,"textLines":1,"bbox":[842,336,160,42]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":3,"text":"BU 있으면 CE\n없으면 MX","textPreview":"BU 있으면 CE | 없으면 MX","textChars":16,"textLines":2,"bbox":[842,386,160,46]}
+{"kind":"shape","id":"sh/2hwfyxob","slide":3,"bbox":[1068,258,205,188]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":3,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1090,278,60,46]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":3,"text":"저장/갱신","textPreview":"저장/갱신","textChars":5,"textLines":1,"bbox":[1090,336,160,42]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":3,"text":"개별 결과 저장\n마스터 DB 반영","textPreview":"개별 결과 저장 | 마스터 DB 반영","textChars":18,"textLines":2,"bbox":[1090,386,160,46]}
+{"kind":"textbox","id":"sh/2p8nqxs7","slide":3,"text":"main_workflow()는 전체 try/catch로 감싸져 있고, 개별 파일 오류는 continue로 격리됩니다.","textPreview":"main_workflow()는 전체 try/catch로 감싸져 있고, 개별 파일 오류는 continue로 격리됩니다.","textChars":65,"textLines":1,"bbox":[80,548,1040,44]}
+{"kind":"notes","id":"nt/6dplfu","slide":3,"text":""}
+{"kind":"slide","id":"sl/q4cf13","slide":4,"title":"GMO Cleansing System","textShapes":2}
+{"kind":"textbox","id":"sh/ed8v6psf","slide":4,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/p4r65wju","slide":4,"text":"폴더와 설정 파일","textPreview":"폴더와 설정 파일","textChars":9,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/wjudg7ad","slide":4,"bbox":[64,145,1152,1]}
+{"kind":"table","id":"tb/6xkf6dcb","slide":4,"name":"","rows":7,"cols":4,"preview":"영역 | 경로/파일 | 역할 | 운영 포인트","bbox":[70,184,1140,370]}
+{"kind":"notes","id":"nt/q4cf13","slide":4,"text":""}
+{"kind":"slide","id":"sl/xinh6c","slide":5,"title":"GMO Cleansing System","textShapes":11}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":5,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/vu9knih4","slide":5,"text":"공통 전처리 규칙","textPreview":"공통 전처리 규칙","textChars":9,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/29gr2p8n","slide":5,"bbox":[64,145,1152,1]}
+{"kind":"shape","id":"sh/d8bat47y","slide":5,"bbox":[76,185,520,130]}
+{"kind":"shape","id":"sh/knih4byh","slide":5,"bbox":[76,185,6,130]}
+{"kind":"textbox","id":"sh/v6psfil0","slide":5,"text":"sanitize_column_headers","textPreview":"sanitize_column_headers","textChars":23,"textLines":1,"bbox":[98,205,476,30]}
+{"kind":"textbox","id":"sh/2lszqtcj","slide":5,"text":"BOM, 줄바꿈, 따옴표, 연속 공백을 제거하고 중복 컬럼은 first-win으로 정리합니다.","textPreview":"BOM, 줄바꿈, 따옴표, 연속 공백을 제거하고 중복 컬럼은 first-win으로 정리합니다.","textChars":52,"textLines":1,"bbox":[98,243,476,58]}
+{"kind":"shape","id":"sh/dcbulwva","slide":5,"bbox":[684,185,520,130]}
+{"kind":"shape","id":"sh/kre1w7mp","slide":5,"bbox":[684,185,6,130]}
+{"kind":"textbox","id":"sh/6psfil0r","slide":5,"text":"process_and_filter_dates","textPreview":"process_and_filter_dates","textChars":24,"textLines":1,"bbox":[706,205,476,30]}
+{"kind":"textbox","id":"sh/val87ed8","slide":5,"text":"Excel serial date와 텍스트 날짜를 파싱하고 2025-01-01 이후 데이터만 유지합니다.","textPreview":"Excel serial date와 텍스트 날짜를 파싱하고 2025-01-01 이후 데이터만 유지합니다.","textChars":57,"textLines":1,"bbox":[706,243,476,58]}
+{"kind":"shape","id":"sh/kre1w7mp","slide":5,"bbox":[76,365,520,130]}
+{"kind":"shape","id":"sh/dcbulwva","slide":5,"bbox":[76,365,6,130]}
+{"kind":"textbox","id":"sh/2x4nap4r","slide":5,"text":"process_metric_columns","textPreview":"process_metric_columns","textChars":22,"textLines":1,"bbox":[98,385,476,30]}
+{"kind":"textbox","id":"sh/vixczed8","slide":5,"text":"Spend, Revenue, Clicks 등 수치 컬럼을 숫자로 바꾸고 CPC를 재계산합니다.","textPreview":"Spend, Revenue, Clicks 등 수치 컬럼을 숫자로 바꾸고 CPC를 재계산합니다.","textChars":52,"textLines":1,"bbox":[98,423,476,58]}
+{"kind":"shape","id":"sh/k3q5o7qp","slide":5,"bbox":[684,365,520,130]}
+{"kind":"shape","id":"sh/donyd0z6","slide":5,"bbox":[684,365,6,130]}
+{"kind":"textbox","id":"sh/29gr2p8n","slide":5,"text":"fast_normalize_text","textPreview":"fast_normalize_text","textChars":19,"textLines":1,"bbox":[706,385,476,30]}
+{"kind":"textbox","id":"sh/vu9knih4","slide":5,"text":"CamelCase, 숫자+문자 조합, 대소문자 편차를 벡터화 방식으로 표준화합니다.","textPreview":"CamelCase, 숫자+문자 조합, 대소문자 편차를 벡터화 방식으로 표준화합니다.","textChars":46,"textLines":1,"bbox":[706,423,476,58]}
+{"kind":"textbox","id":"sh/judg7ads","slide":5,"text":"전처리 실패나 컬럼명 변형은 대부분 이 네 구간에서 흡수됩니다. 신규 원본 양식이 들어오면 먼저 여기 로그를 봅니다.","textPreview":"전처리 실패나 컬럼명 변형은 대부분 이 네 구간에서 흡수됩니다. 신규 원본 양식이 들어오면 먼저 여기 로그를 봅니다.","textChars":65,"textLines":1,"bbox":[88,560,1040,44]}
+{"kind":"notes","id":"nt/xinh6c","slide":5,"text":""}
+{"kind":"slide","id":"sl/2lg704","slide":6,"title":"GMO Cleansing System","textShapes":9}
+{"kind":"textbox","id":"sh/qxs72x4n","slide":6,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/xobm58z2","slide":6,"text":"매핑과 분기 로직","textPreview":"매핑과 분기 로직","textChars":9,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/83itgfml","slide":6,"bbox":[64,145,1152,1]}
+{"kind":"shape","id":"sh/fu18jqh0","slide":6,"bbox":[72,190,350,330]}
+{"kind":"shape","id":"sh/m94fu18j","slide":6,"bbox":[72,190,6,330]}
+{"kind":"textbox","id":"sh/x0nuxc3y","slide":6,"text":"Media Mapping","textPreview":"Media Mapping","textChars":13,"textLines":1,"bbox":[94,210,306,30]}
+{"kind":"textbox","id":"sh/4fu18jqh","slide":6,"text":"run_cleansing_pipeline(..., is_media=True)\n\n- F_Key 기준 merge\n- Affiliate는 Media Type 2를 key로 사용\n- 실패 시 raw media 값을 보존","textPreview":"run_cleansing_pipeline(..., is_media=True) |  | - F_Key 기준 merge | - Affiliate는 Media Type 2를 key로 사용 | - 실패 시 raw media 값을 보존","textChars":118,"textLines":5,"bbox":[94,248,306,258]}
+{"kind":"shape","id":"sh/f6dcbulw","slide":6,"bbox":[464,190,350,330]}
+{"kind":"shape","id":"sh/mlkjm1cf","slide":6,"bbox":[464,190,6,330]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":6,"text":"MX Product","textPreview":"MX Product","textChars":10,"textLines":1,"bbox":[486,210,306,30]}
+{"kind":"textbox","id":"sh/5wjudg7a","slide":6,"text":"run_cleansing_pipeline(...MX)\n\n- C_Key 기준 merge\n- priority 4~0 점수화\n- Multi/누락 category rescue","textPreview":"run_cleansing_pipeline(...MX) |  | - C_Key 기준 merge | - priority 4~0 점수화 | - Multi/누락 category rescue","textChars":93,"textLines":5,"bbox":[486,248,306,258]}
+{"kind":"shape","id":"sh/y90je9cv","slide":6,"bbox":[856,190,350,330]}
+{"kind":"shape","id":"sh/nuxc3ylc","slide":6,"bbox":[856,190,6,330]}
+{"kind":"textbox","id":"sh/gn29gr2p","slide":6,"text":"CE Product","textPreview":"CE Product","textChars":10,"textLines":1,"bbox":[878,210,306,30]}
+{"kind":"textbox","id":"sh/58z25kb6","slide":6,"text":"run_ce_product_cleansing()\n\n- A_Key 기준 category lookup\n- unique series만 global lookup\n- BU division rule 적용","textPreview":"run_ce_product_cleansing() |  | - A_Key 기준 category lookup | - unique series만 global lookup | - BU division rule 적용","textChars":107,"textLines":5,"bbox":[878,248,306,258]}
+{"kind":"textbox","id":"sh/yhgn29gr","slide":6,"text":"분기 기준: 원본 CSV에 BU 컬럼이 있으면 CE, 없으면 MX로 처리합니다.","textPreview":"분기 기준: 원본 CSV에 BU 컬럼이 있으면 CE, 없으면 MX로 처리합니다.","textChars":44,"textLines":1,"bbox":[86,574,980,34]}
+{"kind":"notes","id":"nt/2lg704","slide":6,"text":""}
+{"kind":"slide","id":"sl/fzmapz","slide":7,"title":"GMO Cleansing System","textShapes":2}
+{"kind":"textbox","id":"sh/at47y1kr","slide":7,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/lkjm1cfa","slide":7,"text":"MX와 CE의 차이","textPreview":"MX와 CE의 차이","textChars":10,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/szqtcj6t","slide":7,"bbox":[64,145,1152,1]}
+{"kind":"table","id":"tb/epkzupwb","slide":7,"name":"","rows":7,"cols":3,"preview":"항목 | MX | CE","bbox":[70,184,1140,376]}
+{"kind":"notes","id":"nt/fzmapz","slide":7,"text":""}
+{"kind":"slide","id":"sl/dmzghf","slide":8,"title":"GMO Cleansing System","textShapes":2}
+{"kind":"textbox","id":"sh/gr2p8nqx","slide":8,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/r65wjudg","slide":8,"text":"산출물과 리포트","textPreview":"산출물과 리포트","textChars":8,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/ylc7u54z","slide":8,"bbox":[64,145,1152,1]}
+{"kind":"table","id":"tb/8z25kb6x","slide":8,"name":"","rows":7,"cols":4,"preview":"산출물 | 위치 | 생성 로직 | 확인 포인트","bbox":[58,176,1164,420]}
+{"kind":"notes","id":"nt/dmzghf","slide":8,"text":""}
+{"kind":"slide","id":"sl/nbq23e","slide":9,"title":"GMO Cleansing System","textShapes":9}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":9,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/4r65wjud","slide":9,"text":"마스터 DB 갱신 방식","textPreview":"마스터 DB 갱신 방식","textChars":12,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/xc3ylc7u","slide":9,"bbox":[64,145,1152,1]}
+{"kind":"shape","id":"sh/mtwra5gb","slide":9,"bbox":[76,184,340,330]}
+{"kind":"shape","id":"sh/fepkzupw","slide":9,"bbox":[76,184,6,330]}
+{"kind":"textbox","id":"sh/4zidonyd","slide":9,"text":"1. 백업","textPreview":"1. 백업","textChars":5,"textLines":1,"bbox":[98,204,296,30]}
+{"kind":"textbox","id":"sh/xkf6dcbu","slide":9,"text":"기존 TOTAL_MASTER 파일은 Backup_구분_YYYYMMDD_HHMMSS.csv로 먼저 복사합니다.","textPreview":"기존 TOTAL_MASTER 파일은 Backup_구분_YYYYMMDD_HHMMSS.csv로 먼저 복사합니다.","textChars":60,"textLines":1,"bbox":[98,242,296,258]}
+{"kind":"shape","id":"sh/qxs72x4n","slide":9,"bbox":[470,184,340,330]}
+{"kind":"shape","id":"sh/fil0rqd4","slide":9,"bbox":[470,184,6,330]}
+{"kind":"textbox","id":"sh/fepkzupw","slide":9,"text":"2. 변경 시작점","textPreview":"2. 변경 시작점","textChars":9,"textLines":1,"bbox":[492,204,296,30]}
+{"kind":"textbox","id":"sh/mtwra5gb","slide":9,"text":"Subsidiary별 Week 합계를 비교하고, 차이가 있으면 Date 합계까지 내려가 cutoff를 찾습니다.","textPreview":"Subsidiary별 Week 합계를 비교하고, 차이가 있으면 Date 합계까지 내려가 cutoff를 찾습니다.","textChars":62,"textLines":1,"bbox":[492,242,296,258]}
+{"kind":"shape","id":"sh/xkf6dcbu","slide":9,"bbox":[864,184,340,330]}
+{"kind":"shape","id":"sh/4zidonyd","slide":9,"bbox":[864,184,6,330]}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":9,"text":"3. 부분 치환","textPreview":"3. 부분 치환","textChars":8,"textLines":1,"bbox":[886,204,296,30]}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":9,"text":"cutoff 이전 기존 데이터는 유지하고, cutoff 이후는 새 데이터로 교체해 최종 CSV를 씁니다.","textPreview":"cutoff 이전 기존 데이터는 유지하고, cutoff 이후는 새 데이터로 교체해 최종 CSV를 씁니다.","textChars":58,"textLines":1,"bbox":[886,242,296,258]}
+{"kind":"textbox","id":"sh/xc3ylc7u","slide":9,"text":"정밀도 잡음 방지를 위해 주요 metric은 비교 전 숫자화하고 소수점 2자리로 반올림합니다.","textPreview":"정밀도 잡음 방지를 위해 주요 metric은 비교 전 숫자화하고 소수점 2자리로 반올림합니다.","textChars":52,"textLines":1,"bbox":[88,560,1040,44]}
+{"kind":"notes","id":"nt/nbq23e","slide":9,"text":""}
+{"kind":"slide","id":"sl/zda71p","slide":10,"title":"GMO Cleansing System","textShapes":2}
+{"kind":"textbox","id":"sh/7qpg3ex0","slide":10,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/0bi9s36h","slide":10,"text":"운영 체크리스트","textPreview":"운영 체크리스트","textChars":8,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/pwb2hwfy","slide":10,"bbox":[64,145,1152,1]}
+{"kind":"table","id":"tb/val87ed8","slide":10,"name":"","rows":7,"cols":6,"preview":"단계 | 작업 | 성공 기준 | 실패 신호 | 조치 | 커밋","bbox":[54,176,1172,430]}
+{"kind":"notes","id":"nt/zda71p","slide":10,"text":""}
+{"kind":"slide","id":"sl/hu97dz","slide":11,"title":"GMO Cleansing System","textShapes":9}
+{"kind":"textbox","id":"sh/dg7adsji","slide":11,"text":"GMO Cleansing System","textPreview":"GMO Cleansing System","textChars":20,"textLines":1,"bbox":[64,34,460,30]}
+{"kind":"textbox","id":"sh/6tovahoz","slide":11,"text":"장애 대응과 인수인계 포인트","textPreview":"장애 대응과 인수인계 포인트","textChars":15,"textLines":1,"bbox":[64,72,900,58]}
+{"kind":"shape","id":"sh/vahoza1g","slide":11,"bbox":[64,145,1152,1]}
+{"kind":"shape","id":"sh/onyd0z61","slide":11,"bbox":[76,184,350,340]}
+{"kind":"shape","id":"sh/d8v6psfi","slide":11,"bbox":[76,184,6,340]}
+{"kind":"textbox","id":"sh/6hcrmhk3","slide":11,"text":"CSV 로드 실패","textPreview":"CSV 로드 실패","textChars":9,"textLines":1,"bbox":[98,204,306,30]}
+{"kind":"textbox","id":"sh/z25kb6xk","slide":11,"text":"utils.load_csv_safely는 utf-8-sig, cp949 순서로 시도합니다. PermissionError는 파일 열림 여부부터 확인합니다.","textPreview":"utils.load_csv_safely는 utf-8-sig, cp949 순서로 시도합니다. PermissionError는 파일 열림 여부부터 확인합니다.","textChars":85,"textLines":1,"bbox":[98,242,306,268]}
+{"kind":"shape","id":"sh/oj2t83it","slide":11,"bbox":[464,184,350,340]}
+{"kind":"shape","id":"sh/d4vmtwra","slide":11,"bbox":[464,184,6,340]}
+{"kind":"textbox","id":"sh/h4byhgn2","slide":11,"text":"미매핑 증가","textPreview":"미매핑 증가","textChars":6,"textLines":1,"bbox":[486,204,306,30]}
+{"kind":"textbox","id":"sh/sji5snel","slide":11,"text":"Reports의 Unmapped 파일을 기준으로 media/product mapping Excel에 key를 추가하고 다시 실행합니다.","textPreview":"Reports의 Unmapped 파일을 기준으로 media/product mapping Excel에 key를 추가하고 다시 실행합니다.","textChars":75,"textLines":1,"bbox":[486,242,306,268]}
+{"kind":"shape","id":"sh/3ylc7u54","slide":11,"bbox":[852,184,350,340]}
+{"kind":"shape","id":"sh/adsji5sn","slide":11,"bbox":[852,184,6,340]}
+{"kind":"textbox","id":"sh/lszqtcj6","slide":11,"text":"마스터 이상치","textPreview":"마스터 이상치","textChars":7,"textLines":1,"bbox":[874,204,306,30]}
+{"kind":"textbox","id":"sh/s72x4nap","slide":11,"text":"Backup 폴더의 직전 파일과 TOTAL_MASTER를 비교합니다. cutoff 이후만 바뀌는 구조인지 확인합니다.","textPreview":"Backup 폴더의 직전 파일과 TOTAL_MASTER를 비교합니다. cutoff 이후만 바뀌는 구조인지 확인합니다.","textChars":65,"textLines":1,"bbox":[874,242,306,268]}
+{"kind":"textbox","id":"sh/3m94fu18","slide":11,"text":"데이터 CSV는 저장소 커밋 대상이 아닙니다. 커밋 전 staged 파일에 1_Input/2_Output CSV가 없는지 확인합니다.","textPreview":"데이터 CSV는 저장소 커밋 대상이 아닙니다. 커밋 전 staged 파일에 1_Input/2_Output CSV가 없는지 확인합니다.","textChars":74,"textLines":1,"bbox":[88,574,1040,34]}
+{"kind":"notes","id":"nt/hu97dz","slide":11,"text":""}

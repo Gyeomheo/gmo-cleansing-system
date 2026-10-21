@@ -309,6 +309,6 @@ Excel 에서 매핑 엑셀 · 마스터 CSV · 취합본을 열어 두면 점검
 | `3_Config/reminder_links.csv` | 리마인드 [메일 열기] 링크(지금은 비움) |
 | `2_Output/` | `TOTAL_MASTER_*.csv` · cleaned · `_이번실행_<구분>.csv` · `Reports/` · 마스터 백업 `Backup/`(파일명 시각 기준) |
 | `1_Input/` · `1_Input/_보관/` | 이번 입력 · 바뀐 입력 보관 |
-| `assets/icon_weekly_v5.ico` · `tools/icons/make_icons.py` | 바로가기 · 작업표시줄 아이콘(W.) — 그림을 바꾸면 파일 이름 버전을 올린다 |
+| `assets/icon_weekly_v6.ico` · `tools/icons/make_icons.py` | 바로가기 · 작업표시줄 아이콘(W., 2026-10-21 v6 픽셀 격자 — Artience 로고 참고) — 그림을 바꾸면 파일 이름 버전을 올린다 |
 
 GUI · 아이콘 디자인 서식(Weekly ROAS 복기와 공통)은 [docs/작업이력.md](docs/작업이력.md) §3-2.

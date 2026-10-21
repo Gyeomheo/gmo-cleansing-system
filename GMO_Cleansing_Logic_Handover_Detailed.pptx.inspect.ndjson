@@ -1,0 +1,462 @@
+{"kind":"deck","id":"pr/oa7zpc","name":"Deck"}
+{"kind":"layout","layoutId":"e5fc7db5-da34-427f-abe1-8462e4d1840f","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"6b7ee165-7752-41c6-81e7-285e77943daf","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/sxh02q","slide":1,"title":"GMO Cleansing","textShapes":9}
+{"kind":"textbox","id":"sh/sneloj2t","slide":1,"text":"GMO Cleansing\nLogic Handover","textPreview":"GMO Cleansing | Logic Handover","textChars":28,"textLines":2,"bbox":[76,140,790,160]}
+{"kind":"textbox","id":"sh/32lszqtc","slide":1,"text":"이 PPT만 보고 입력 CSV부터 cleaned 결과, 요약 리포트, 미매핑 리포트까지의 클렌징 로직을 이해할 수 있게 정리한 상세 인수인계 자료입니다.","textPreview":"이 PPT만 보고 입력 CSV부터 cleaned 결과, 요약 리포트, 미매핑 리포트까지의 클렌징 로직을 이해할 수 있게 정리한 상세 인수인계 자료입니다.","textChars":85,"textLines":1,"bbox":[80,382,760,78]}
+{"kind":"shape","id":"sh/ahoza1gv","slide":1,"bbox":[858,142,330,96]}
+{"kind":"shape","id":"sh/lkjm1cfa","slide":1,"bbox":[858,142,6,96]}
+{"kind":"textbox","id":"sh/szqtcj6t","slide":1,"text":"범위","textPreview":"범위","textChars":2,"textLines":1,"bbox":[880,160,286,34]}
+{"kind":"textbox","id":"sh/3ex0nuxc","slide":1,"text":"개별 클렌징 산출물","textPreview":"개별 클렌징 산출물","textChars":10,"textLines":1,"bbox":[880,204,286,22]}
+{"kind":"shape","id":"sh/at47y1kr","slide":1,"bbox":[858,270,330,96]}
+{"kind":"shape","id":"sh/loj2t83i","slide":1,"bbox":[858,270,6,96]}
+{"kind":"textbox","id":"sh/w3m94fu1","slide":1,"text":"진입점","textPreview":"진입점","textChars":3,"textLines":1,"bbox":[880,288,286,34]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":1,"text":"run.py / main_workflow()","textPreview":"run.py / main_workflow()","textChars":24,"textLines":1,"bbox":[880,332,286,22]}
+{"kind":"shape","id":"sh/nyd0z610","slide":1,"bbox":[858,398,330,96]}
+{"kind":"shape","id":"sh/cj6tovah","slide":1,"bbox":[858,398,6,96]}
+{"kind":"textbox","id":"sh/54zidony","slide":1,"text":"핵심","textPreview":"핵심","textChars":2,"textLines":1,"bbox":[880,416,286,34]}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":1,"text":"src/pipeline.py","textPreview":"src/pipeline.py","textChars":15,"textLines":1,"bbox":[880,460,286,22]}
+{"kind":"textbox","id":"sh/nap4r65w","slide":1,"text":"2026-06-22","textPreview":"2026-06-22","textChars":10,"textLines":1,"bbox":[80,606,260,26]}
+{"kind":"notes","id":"nt/sxh02q","slide":1,"text":""}
+{"kind":"slide","id":"sl/rieawl","slide":2,"title":"GMO Cleansing Logic","textShapes":9}
+{"kind":"textbox","id":"sh/ap4r65wj","slide":2,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/hgn29gr2","slide":2,"text":"이 자료가 설명하는 범위","textPreview":"이 자료가 설명하는 범위","textChars":13,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/svu9knih","slide":2,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/zidonyd0","slide":2,"bbox":[76,198,338,300]}
+{"kind":"shape","id":"sh/a1gvy90j","slide":2,"bbox":[76,198,6,300]}
+{"kind":"textbox","id":"sh/hoza1gvy","slide":2,"text":"포함","textPreview":"포함","textChars":2,"textLines":1,"bbox":[98,216,294,34]}
+{"kind":"textbox","id":"sh/s36hcrmh","slide":2,"text":"입력 CSV 로드, 날짜/지표 전처리, 미디어 매핑, MX/CE 제품 매핑, 개별 결과 저장, 변경 요약, 미매핑 리포트.","textPreview":"입력 CSV 로드, 날짜/지표 전처리, 미디어 매핑, MX/CE 제품 매핑, 개별 결과 저장, 변경 요약, 미매핑 리포트.","textChars":68,"textLines":1,"bbox":[98,260,294,226]}
+{"kind":"shape","id":"sh/3m94fu18","slide":2,"bbox":[470,198,338,300]}
+{"kind":"shape","id":"sh/a5gbq1or","slide":2,"bbox":[470,198,6,300]}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":2,"text":"끝점","textPreview":"끝점","textChars":2,"textLines":1,"bbox":[492,216,294,34]}
+{"kind":"textbox","id":"sh/d0z61032","slide":2,"text":"cleaned 결과 CSV, 변경 요약 CSV, 미매핑 리포트까지를 설명합니다. 이후 운영 단계는 다루지 않습니다.","textPreview":"cleaned 결과 CSV, 변경 요약 CSV, 미매핑 리포트까지를 설명합니다. 이후 운영 단계는 다루지 않습니다.","textChars":64,"textLines":1,"bbox":[492,260,294,226]}
+{"kind":"shape","id":"sh/29gr2p8n","slide":2,"bbox":[864,198,338,300]}
+{"kind":"shape","id":"sh/vu9knih4","slide":2,"bbox":[864,198,6,300]}
+{"kind":"textbox","id":"sh/knih4byh","slide":2,"text":"운영 관점","textPreview":"운영 관점","textChars":5,"textLines":1,"bbox":[886,216,294,34]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":2,"text":"어떤 파일을 넣고, 어떤 매핑을 고치고, 어떤 리포트를 확인해야 하는지까지 추적합니다.","textPreview":"어떤 파일을 넣고, 어떤 매핑을 고치고, 어떤 리포트를 확인해야 하는지까지 추적합니다.","textChars":48,"textLines":1,"bbox":[886,260,294,226]}
+{"kind":"textbox","id":"sh/2lszqtcj","slide":2,"text":"이 상세본의 끝점은 cleaned_*.csv, *_Summary_*.csv, Reports/Unmapped_*.csv입니다.","textPreview":"이 상세본의 끝점은 cleaned_*.csv, *_Summary_*.csv, Reports/Unmapped_*.csv입니다.","textChars":69,"textLines":1,"bbox":[92,560,1040,42]}
+{"kind":"notes","id":"nt/rieawl","slide":2,"text":""}
+{"kind":"slide","id":"sl/mk5pon","slide":3,"title":"GMO Cleansing Logic","textShapes":18}
+{"kind":"textbox","id":"sh/e9cvixcz","slide":3,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/lwval87e","slide":3,"text":"전체 실행 흐름","textPreview":"전체 실행 흐름","textChars":8,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/wb2hwfyx","slide":3,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/3itgfmlk","slide":3,"bbox":[76,250,210,188]}
+{"kind":"textbox","id":"sh/ex0nuxc3","slide":3,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[98,270,60,46]}
+{"kind":"textbox","id":"sh/loj2t83i","slide":3,"text":"매핑 로드","textPreview":"매핑 로드","textChars":5,"textLines":1,"bbox":[98,328,166,34]}
+{"kind":"textbox","id":"sh/w3m94fu1","slide":3,"text":"Excel -> JSON\n실행마다 캐시 생성","textPreview":"Excel -> JSON | 실행마다 캐시 생성","textChars":24,"textLines":2,"bbox":[98,374,166,54]}
+{"kind":"shape","id":"sh/3ex0nuxc","slide":3,"bbox":[326,250,210,188]}
+{"kind":"textbox","id":"sh/at47y1kr","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[348,270,60,46]}
+{"kind":"textbox","id":"sh/knih4byh","slide":3,"text":"CSV 로드","textPreview":"CSV 로드","textChars":6,"textLines":1,"bbox":[348,328,166,34]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":3,"text":"1_Input/*.csv\n파일별 반복","textPreview":"1_Input/*.csv | 파일별 반복","textChars":20,"textLines":2,"bbox":[348,374,166,54]}
+{"kind":"shape","id":"sh/2lszqtcj","slide":3,"bbox":[576,250,210,188]}
+{"kind":"textbox","id":"sh/v6psfil0","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[598,270,60,46]}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":3,"text":"공통 정제","textPreview":"공통 정제","textChars":5,"textLines":1,"bbox":[598,328,166,34]}
+{"kind":"textbox","id":"sh/d0z61032","slide":3,"text":"헤더, 날짜,\n수치 컬럼 처리","textPreview":"헤더, 날짜, | 수치 컬럼 처리","textChars":16,"textLines":2,"bbox":[598,374,166,54]}
+{"kind":"shape","id":"sh/29gr2p8n","slide":3,"bbox":[826,250,210,188]}
+{"kind":"textbox","id":"sh/vu9knih4","slide":3,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[848,270,60,46]}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":3,"text":"클렌징","textPreview":"클렌징","textChars":3,"textLines":1,"bbox":[848,328,166,34]}
+{"kind":"textbox","id":"sh/donyd0z6","slide":3,"text":"미디어 공통\nMX/CE 제품 분기","textPreview":"미디어 공통 | MX/CE 제품 분기","textChars":18,"textLines":2,"bbox":[848,374,166,54]}
+{"kind":"shape","id":"sh/hcrmhk3q","slide":3,"bbox":[1076,250,210,188]}
+{"kind":"textbox","id":"sh/orytsvu9","slide":3,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1098,270,60,46]}
+{"kind":"textbox","id":"sh/z61032ls","slide":3,"text":"파일 저장","textPreview":"파일 저장","textChars":5,"textLines":1,"bbox":[1098,328,166,34]}
+{"kind":"textbox","id":"sh/al87ed8b","slide":3,"text":"cleaned 결과\n요약/미매핑 리포트","textPreview":"cleaned 결과 | 요약/미매핑 리포트","textChars":21,"textLines":2,"bbox":[1098,374,166,54]}
+{"kind":"textbox","id":"sh/h0fepkzu","slide":3,"text":"개별 파일 오류는 해당 파일만 Skip하고 다음 CSV 처리를 계속합니다.","textPreview":"개별 파일 오류는 해당 파일만 Skip하고 다음 CSV 처리를 계속합니다.","textChars":41,"textLines":1,"bbox":[84,548,980,40]}
+{"kind":"notes","id":"nt/mk5pon","slide":3,"text":""}
+{"kind":"slide","id":"sl/fb7axt","slide":4,"title":"GMO Cleansing Logic","textShapes":2}
+{"kind":"textbox","id":"sh/ylc7u54z","slide":4,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/9cvixcze","slide":4,"text":"폴더와 설정 파일","textPreview":"폴더와 설정 파일","textChars":9,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/gr2p8nqx","slide":4,"bbox":[64,148,1152,1]}
+{"kind":"table","id":"tb/a9w3m94f","slide":4,"name":"","rows":7,"cols":4,"preview":"영역 | 경로/파일 | 역할 | 운영 포인트","bbox":[70,184,1140,390]}
+{"kind":"notes","id":"nt/fb7axt","slide":4,"text":""}
+{"kind":"slide","id":"sl/8jmyg4","slide":5,"title":"GMO Cleansing Logic","textShapes":7}
+{"kind":"textbox","id":"sh/judg7ads","slide":5,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/cfa9w3m9","slide":5,"text":"run.py의 큰 구조","textPreview":"run.py의 큰 구조","textChars":12,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/1032lszq","slide":5,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/u18jqh0f","slide":5,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/jm1cfa9w","slide":5,"text":"MAIN FLOW","textPreview":"MAIN FLOW","textChars":9,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/c7u54zid","slide":5,"bbox":[76,208,520,390]}
+{"kind":"shape","id":"sh/1orytsvu","slide":5,"bbox":[76,208,6,390]}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":5,"text":"초기화 단계","textPreview":"초기화 단계","textChars":6,"textLines":1,"bbox":[98,226,476,34]}
+{"kind":"textbox","id":"sh/nap4r65w","slide":5,"text":"1. warnings UserWarning 무시\n2. src 모듈 import 실패 시 즉시 종료\n3. cleansing_log.txt와 stdout에 동시 로깅\n4. Excel 매핑 3종을 JSON 캐시로 변환\n5. JSON 캐시를 DataFrame df_map으로 로드","textPreview":"1. warnings UserWarning 무시 | 2. src 모듈 import 실패 시 즉시 종료 | 3. cleansing_log.txt와 stdout에 동시 로깅 | 4. Excel 매핑 3종을 JSON 캐시로 변환 | 5. JSON 캐시...","textChars":152,"textLines":5,"bbox":[98,270,476,316]}
+{"kind":"shape","id":"sh/7u54zido","slide":5,"bbox":[684,208,520,390]}
+{"kind":"shape","id":"sh/ed8bat47","slide":5,"bbox":[684,208,6,390]}
+{"kind":"textbox","id":"sh/l0rqd4vm","slide":5,"text":"파일 반복 단계","textPreview":"파일 반복 단계","textChars":8,"textLines":1,"bbox":[706,226,476,34]}
+{"kind":"textbox","id":"sh/wfyxobm5","slide":5,"text":"1. 1_Input/*.csv를 pathlib.glob으로 수집\n2. 파일별 load_csv_safely 실행\n3. 공통 전처리 후 raw 원본 복사\n4. Media -> Product 순서로 클렌징\n5. cleaned/summary/unmapped 리포트 저장","textPreview":"1. 1_Input/*.csv를 pathlib.glob으로 수집 | 2. 파일별 load_csv_safely 실행 | 3. 공통 전처리 후 raw 원본 복사 | 4. Media -> Product 순서로 클렌징 | 5. cleaned/summar...","textChars":146,"textLines":5,"bbox":[706,270,476,316]}
+{"kind":"notes","id":"nt/8jmyg4","slide":5,"text":""}
+{"kind":"slide","id":"sl/j0ulnv","slide":6,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/bulwval8","slide":6,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/0fepkzup","slide":6,"text":"매핑 설정: config.py가 로직을 일반화하는 방식","textPreview":"매핑 설정: config.py가 로직을 일반화하는 방식","textChars":30,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/p0bi9s36","slide":6,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/ixczed8v","slide":6,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/bi9s36hc","slide":6,"text":"CONFIG","textPreview":"CONFIG","textChars":6,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/tovahoza","slide":6,"text":"핵심 포인트: 같은 run_cleansing_pipeline()도 map_cols 설정에 따라 Media 또는 MX Product 로직으로 동작합니다.","textPreview":"핵심 포인트: 같은 run_cleansing_pipeline()도 map_cols 설정에 따라 Media 또는 MX Product 로직으로 동작합니다.","textChars":84,"textLines":1,"bbox":[82,586,1040,34]}
+{"kind":"table","id":"tb/hoza1gvy","slide":6,"name":"","rows":4,"cols":5,"preview":"매핑 | raw_cols | std_cols | key | normalize_cols","bbox":[70,210,1140,340]}
+{"kind":"notes","id":"nt/j0ulnv","slide":6,"text":""}
+{"kind":"slide","id":"sl/4wm5qv","slide":7,"title":"GMO Cleansing Logic","textShapes":10}
+{"kind":"textbox","id":"sh/y90je9cv","slide":7,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/5wjudg7a","slide":7,"text":"Excel 매핑을 JSON 캐시로 바꾸는 이유","textPreview":"Excel 매핑을 JSON 캐시로 바꾸는 이유","textChars":25,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/gbq1oryt","slide":7,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/n29gr2p8","slide":7,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/yhgn29gr","slide":7,"text":"CONVERTER","textPreview":"CONVERTER","textChars":9,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/58z25kb6","slide":7,"bbox":[76,206,350,322]}
+{"kind":"shape","id":"sh/gn29gr2p","slide":7,"bbox":[76,206,6,322]}
+{"kind":"textbox","id":"sh/neloj2t8","slide":7,"text":"convert_excel_to_json","textPreview":"convert_excel_to_json","textChars":21,"textLines":1,"bbox":[98,224,306,34]}
+{"kind":"textbox","id":"sh/ytsvu9kn","slide":7,"text":"Excel을 읽고 NaN을 빈 문자열로 통일합니다. key_col 기준으로 std_cols 후보들을 groupby하여 dictionary 형태로 저장합니다.","textPreview":"Excel을 읽고 NaN을 빈 문자열로 통일합니다. key_col 기준으로 std_cols 후보들을 groupby하여 dictionary 형태로 저장합니다.","textChars":87,"textLines":1,"bbox":[98,268,306,248]}
+{"kind":"shape","id":"sh/83itgfml","slide":7,"bbox":[466,206,350,322]}
+{"kind":"shape","id":"sh/xobm58z2","slide":7,"bbox":[466,206,6,322]}
+{"kind":"textbox","id":"sh/qxs72x4n","slide":7,"text":"저장 형태","textPreview":"저장 형태","textChars":5,"textLines":1,"bbox":[488,224,306,34]}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":7,"text":"예: key 하나에 여러 표준 후보가 있을 수 있습니다. JSON 값은 후보 행들의 리스트입니다. indent 없이 저장해 속도를 우선합니다.","textPreview":"예: key 하나에 여러 표준 후보가 있을 수 있습니다. JSON 값은 후보 행들의 리스트입니다. indent 없이 저장해 속도를 우선합니다.","textChars":79,"textLines":1,"bbox":[488,268,306,248]}
+{"kind":"shape","id":"sh/4fu18jqh","slide":7,"bbox":[856,206,350,322]}
+{"kind":"shape","id":"sh/x0nuxc3y","slide":7,"bbox":[856,206,6,322]}
+{"kind":"textbox","id":"sh/m94fu18j","slide":7,"text":"load_map_from_json","textPreview":"load_map_from_json","textChars":18,"textLines":1,"bbox":[878,224,306,34]}
+{"kind":"textbox","id":"sh/fu18jqh0","slide":7,"text":"JSON을 다시 펼쳐 [key + std_cols] DataFrame으로 만들고, 이후 pd.merge에 바로 사용합니다.","textPreview":"JSON을 다시 펼쳐 [key + std_cols] DataFrame으로 만들고, 이후 pd.merge에 바로 사용합니다.","textChars":68,"textLines":1,"bbox":[878,268,306,248]}
+{"kind":"shape","id":"sh/4r65wjud","slide":7,"bbox":[96,568,1040,72]}
+{"kind":"textbox","id":"sh/xc3ylc7u","slide":7,"text":"mapping_dict = {key: group.values.tolist() for key, group in grouped}\ndf_map columns = [key_col] + std_col_names","textPreview":"mapping_dict = {key: group.values.tolist() for key, group in grouped} | df_map columns = [key_col] + std_col_names","textChars":112,"textLines":2,"bbox":[114,584,1004,42]}
+{"kind":"notes","id":"nt/4wm5qv","slide":7,"text":""}
+{"kind":"slide","id":"sl/8yo4fk","slide":8,"title":"GMO Cleansing Logic","textShapes":7}
+{"kind":"textbox","id":"sh/j2t83itg","slide":8,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/8nqxs72x","slide":8,"text":"CSV 로딩: load_csv_safely","textPreview":"CSV 로딩: load_csv_safely","textChars":23,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/18jqh0fe","slide":8,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/q5o7qpg3","slide":8,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/jqh0fepk","slide":8,"text":"INPUT","textPreview":"INPUT","textChars":5,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/8bat47y1","slide":8,"bbox":[76,208,520,390]}
+{"kind":"shape","id":"sh/1w7mp0bi","slide":8,"bbox":[76,208,6,390]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":8,"text":"로드 순서","textPreview":"로드 순서","textChars":5,"textLines":1,"bbox":[98,226,476,34]}
+{"kind":"textbox","id":"sh/ji5snelo","slide":8,"text":"1. Path 객체로 정규화\n2. 파일 존재 여부 확인\n3. utf-8-sig로 읽기 시도\n4. UnicodeDecodeError면 cp949 재시도\n5. low_memory=False로 타입 추론 안정화","textPreview":"1. Path 객체로 정규화 | 2. 파일 존재 여부 확인 | 3. utf-8-sig로 읽기 시도 | 4. UnicodeDecodeError면 cp949 재시도 | 5. low_memory=False로 타입 추론 안정화","textChars":114,"textLines":5,"bbox":[98,270,476,316]}
+{"kind":"shape","id":"sh/vu9knih4","slide":8,"bbox":[684,208,520,390]}
+{"kind":"shape","id":"sh/29gr2p8n","slide":8,"bbox":[684,208,6,390]}
+{"kind":"textbox","id":"sh/d0z61032","slide":8,"text":"방어 로직","textPreview":"방어 로직","textChars":5,"textLines":1,"bbox":[706,226,476,34]}
+{"kind":"textbox","id":"sh/kf6dcbul","slide":8,"text":"1. PermissionError면 Excel에서 열린 파일 가능성 안내\n2. 기타 예외는 파일명과 함께 로그\n3. 모든 인코딩 실패 시 None 반환\n4. None이면 run.py가 해당 파일 Skip\n5. Unnamed:/Colonne 시스템 컬럼 제거","textPreview":"1. PermissionError면 Excel에서 열린 파일 가능성 안내 | 2. 기타 예외는 파일명과 함께 로그 | 3. 모든 인코딩 실패 시 None 반환 | 4. None이면 run.py가 해당 파일 Skip | 5. Unnamed:/Col...","textChars":143,"textLines":5,"bbox":[706,270,476,316]}
+{"kind":"notes","id":"nt/8yo4fk","slide":8,"text":""}
+{"kind":"slide","id":"sl/m4ms28","slide":9,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/jm1cfa9w","slide":9,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/c7u54zid","slide":9,"text":"컬럼 헤더 정리: sanitize_column_headers","textPreview":"컬럼 헤더 정리: sanitize_column_headers","textChars":33,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/1orytsvu","slide":9,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/u9knih4b","slide":9,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/judg7ads","slide":9,"text":"COLUMN CLEANUP","textPreview":"COLUMN CLEANUP","textChars":14,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/1032lszq","slide":9,"text":"이 함수는 run.py 초반, run_cleansing_pipeline 시작, process_metric_columns 시작에서 반복 호출되어 헤더 오염을 계속 방어합니다.","textPreview":"이 함수는 run.py 초반, run_cleansing_pipeline 시작, process_metric_columns 시작에서 반복 호출되어 헤더 오염을 계속 방어합니다.","textChars":96,"textLines":1,"bbox":[88,566,1040,46]}
+{"kind":"table","id":"tb/twra5gbq","slide":9,"name":"","rows":6,"cols":3,"preview":"순서 | 처리 | 의도","bbox":[76,212,1128,308]}
+{"kind":"notes","id":"nt/m4ms28","slide":9,"text":""}
+{"kind":"slide","id":"sl/vlbhqn","slide":10,"title":"GMO Cleansing Logic","textShapes":10}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":10,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/83itgfml","slide":10,"text":"날짜 처리: process_and_filter_dates","textPreview":"날짜 처리: process_and_filter_dates","textChars":31,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/xobm58z2","slide":10,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/m94fu18j","slide":10,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/fu18jqh0","slide":10,"text":"DATE","textPreview":"DATE","textChars":4,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/4fu18jqh","slide":10,"bbox":[76,206,350,322]}
+{"kind":"shape","id":"sh/x0nuxc3y","slide":10,"bbox":[76,206,6,322]}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":10,"text":"숫자형 날짜","textPreview":"숫자형 날짜","textChars":6,"textLines":1,"bbox":[98,224,306,34]}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":10,"text":"Date를 문자열 strip 후 numeric 변환합니다. 0보다 크고 73050보다 작은 값은 Excel serial date로 보고 1899-12-30 origin을 적용합니다.","textPreview":"Date를 문자열 strip 후 numeric 변환합니다. 0보다 크고 73050보다 작은 값은 Excel serial date로 보고 1899-12-30 origin을 적용합니다.","textChars":101,"textLines":1,"bbox":[98,268,306,248]}
+{"kind":"shape","id":"sh/vixczed8","slide":10,"bbox":[466,206,350,322]}
+{"kind":"shape","id":"sh/2x4nap4r","slide":10,"bbox":[466,206,6,322]}
+{"kind":"textbox","id":"sh/donyd0z6","slide":10,"text":"텍스트 날짜","textPreview":"텍스트 날짜","textChars":6,"textLines":1,"bbox":[488,224,306,34]}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":10,"text":"숫자가 아닌 값은 pd.to_datetime으로 파싱합니다. 실패 건은 숫자가 아닌 문자를 '-'로 치환해 format='mixed'로 재시도합니다.","textPreview":"숫자가 아닌 값은 pd.to_datetime으로 파싱합니다. 실패 건은 숫자가 아닌 문자를 '-'로 치환해 format='mixed'로 재시도합니다.","textChars":83,"textLines":1,"bbox":[488,268,306,248]}
+{"kind":"shape","id":"sh/val87ed8","slide":10,"bbox":[856,206,350,322]}
+{"kind":"shape","id":"sh/6psfil0r","slide":10,"bbox":[856,206,6,322]}
+{"kind":"textbox","id":"sh/dcbulwva","slide":10,"text":"필터와 파생 컬럼","textPreview":"필터와 파생 컬럼","textChars":9,"textLines":1,"bbox":[878,224,306,34]}
+{"kind":"textbox","id":"sh/kre1w7mp","slide":10,"text":"2025-01-01 이후만 유지합니다. Week, Month, Quarter 컬럼이 있으면 Date 기준으로 다시 계산합니다.","textPreview":"2025-01-01 이후만 유지합니다. Week, Month, Quarter 컬럼이 있으면 Date 기준으로 다시 계산합니다.","textChars":70,"textLines":1,"bbox":[878,268,306,248]}
+{"kind":"textbox","id":"sh/v6psfil0","slide":10,"text":"df가 비면 run.py에서 '유효한 날짜가 없어 스킵' 로그를 남기고 다음 파일로 넘어갑니다.","textPreview":"df가 비면 run.py에서 '유효한 날짜가 없어 스킵' 로그를 남기고 다음 파일로 넘어갑니다.","textChars":53,"textLines":1,"bbox":[90,568,980,34]}
+{"kind":"notes","id":"nt/vlbhqn","slide":10,"text":""}
+{"kind":"slide","id":"sl/ub85vd","slide":11,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/orytsvu9","slide":11,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/z61032ls","slide":11,"text":"수치 지표 처리: process_metric_columns","textPreview":"수치 지표 처리: process_metric_columns","textChars":32,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/al87ed8b","slide":11,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/h0fepkzu","slide":11,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":11,"text":"METRICS","textPreview":"METRICS","textChars":7,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/a9w3m94f","slide":11,"text":"이 단계 이후 지표 컬럼은 summary와 출력 포맷터에서 숫자로 다루기 쉬운 상태가 됩니다.","textPreview":"이 단계 이후 지표 컬럼은 summary와 출력 포맷터에서 숫자로 다루기 쉬운 상태가 됩니다.","textChars":52,"textLines":1,"bbox":[76,580,1080,44]}
+{"kind":"table","id":"tb/udg7adsj","slide":11,"name":"","rows":6,"cols":3,"preview":"처리 | 대상/규칙 | 결과","bbox":[64,204,1152,338]}
+{"kind":"notes","id":"nt/ub85vd","slide":11,"text":""}
+{"kind":"slide","id":"sl/39a2dc","slide":12,"title":"GMO Cleansing Logic","textShapes":10}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":12,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/vixczed8","slide":12,"text":"텍스트 정규화: fast_normalize_text","textPreview":"텍스트 정규화: fast_normalize_text","textChars":28,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/2x4nap4r","slide":12,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/dcbulwva","slide":12,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/kre1w7mp","slide":12,"text":"NORMALIZE","textPreview":"NORMALIZE","textChars":9,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/val87ed8","slide":12,"bbox":[76,204,350,330]}
+{"kind":"shape","id":"sh/6psfil0r","slide":12,"bbox":[76,204,6,330]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":12,"text":"1. 기본 정리","textPreview":"1. 기본 정리","textChars":8,"textLines":1,"bbox":[98,222,306,34]}
+{"kind":"textbox","id":"sh/knih4byh","slide":12,"text":"NaN을 빈 문자열로 바꾸고 문자열 변환 후 앞뒤 공백을 제거합니다.","textPreview":"NaN을 빈 문자열로 바꾸고 문자열 변환 후 앞뒤 공백을 제거합니다.","textChars":38,"textLines":1,"bbox":[98,266,306,256]}
+{"kind":"shape","id":"sh/uxc3ylc7","slide":12,"bbox":[466,204,350,330]}
+{"kind":"shape","id":"sh/ji5snelo","slide":12,"bbox":[466,204,6,330]}
+{"kind":"textbox","id":"sh/c3ylc7u5","slide":12,"text":"2. Regex 분리","textPreview":"2. Regex 분리","textChars":11,"textLines":1,"bbox":[488,222,306,34]}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":12,"text":"abcDef -> abc Def, ABCDef -> ABC Def, 123ABC -> 123 ABC 형태로 분리합니다.","textPreview":"abcDef -> abc Def, ABCDef -> ABC Def, 123ABC -> 123 ABC 형태로 분리합니다.","textChars":66,"textLines":1,"bbox":[488,266,306,256]}
+{"kind":"shape","id":"sh/ulwval87","slide":12,"bbox":[856,204,350,330]}
+{"kind":"shape","id":"sh/j6tovaho","slide":12,"bbox":[856,204,6,330]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":12,"text":"3. Title Case","textPreview":"3. Title Case","textChars":13,"textLines":1,"bbox":[878,222,306,34]}
+{"kind":"textbox","id":"sh/1cfa9w3m","slide":12,"text":"전체가 소문자이거나 대문자인 값만 Title Case로 바꿉니다. 이미 섞인 표기는 유지합니다.","textPreview":"전체가 소문자이거나 대문자인 값만 Title Case로 바꿉니다. 이미 섞인 표기는 유지합니다.","textChars":53,"textLines":1,"bbox":[878,266,306,256]}
+{"kind":"shape","id":"sh/qh0fepkz","slide":12,"bbox":[92,566,1040,72]}
+{"kind":"textbox","id":"sh/j2t83itg","slide":12,"text":"P_CAMEL_1 = ([a-z])([A-Z])\nP_CAMEL_2 = ([A-Z])([A-Z][a-z])    P_DIGIT_CHAR = (\\d+)([a-zA-Z]+)","textPreview":"P_CAMEL_1 = ([a-z])([A-Z]) | P_CAMEL_2 = ([A-Z])([A-Z][a-z])    P_DIGIT_CHAR = (\\d+)([a-zA-Z]+)","textChars":93,"textLines":2,"bbox":[110,582,1004,42]}
+{"kind":"notes","id":"nt/39a2dc","slide":12,"text":""}
+{"kind":"slide","id":"sl/f364tw","slide":13,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":13,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/xc3ylc7u","slide":13,"text":"클렌징 파이프라인의 공통 입력 구조","textPreview":"클렌징 파이프라인의 공통 입력 구조","textChars":19,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/4r65wjud","slide":13,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/fepkzupw","slide":13,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/mtwra5gb","slide":13,"text":"PIPELINE INPUT","textPreview":"PIPELINE INPUT","textChars":14,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/4zidonyd","slide":13,"text":"run_cleansing_pipeline은 먼저 df_raw.reset_index()로 original_index를 만들고, 마지막에 이 index로 정렬을 복원합니다.","textPreview":"run_cleansing_pipeline은 먼저 df_raw.reset_index()로 original_index를 만들고, 마지막에 이 index로 정렬을 복원합니다.","textChars":94,"textLines":1,"bbox":[82,582,1040,42]}
+{"kind":"table","id":"tb/0z61032l","slide":13,"name":"","rows":6,"cols":3,"preview":"변수 | 의미 | 예시","bbox":[70,206,1140,342]}
+{"kind":"notes","id":"nt/f364tw","slide":13,"text":""}
+{"kind":"slide","id":"sl/bf67ls","slide":14,"title":"GMO Cleansing Logic","textShapes":7}
+{"kind":"textbox","id":"sh/wval87ed","slide":14,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/7adsji5s","slide":14,"text":"Media Mapping: F_Key와 Affiliate 예외","textPreview":"Media Mapping: F_Key와 Affiliate 예외","textChars":34,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/epkzupwb","slide":14,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/psfil0rq","slide":14,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/w7mp0bi9","slide":14,"text":"MEDIA","textPreview":"MEDIA","textChars":5,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/7mp0bi9s","slide":14,"bbox":[76,208,520,390]}
+{"kind":"shape","id":"sh/e1w7mp0b","slide":14,"bbox":[76,208,6,390]}
+{"kind":"textbox","id":"sh/l0rqd4vm","slide":14,"text":"일반 Media","textPreview":"일반 Media","textChars":8,"textLines":1,"bbox":[98,226,476,34]}
+{"kind":"textbox","id":"sh/wfyxobm5","slide":14,"text":"A_raw = Media Type 1\nB_raw = Media Type 2\nC_raw = Media Platform\n기본 join key는 C_norm\n즉 F_Key = Media Platform 정규화 값","textPreview":"A_raw = Media Type 1 | B_raw = Media Type 2 | C_raw = Media Platform | 기본 join key는 C_norm | 즉 F_Key = Media Platform 정규화 값","textChars":115,"textLines":5,"bbox":[98,270,476,316]}
+{"kind":"shape","id":"sh/ixczed8v","slide":14,"bbox":[684,208,520,390]}
+{"kind":"shape","id":"sh/bi9s36hc","slide":14,"bbox":[684,208,6,390]}
+{"kind":"textbox","id":"sh/032lszqt","slide":14,"text":"Affiliate 예외","textPreview":"Affiliate 예외","textChars":12,"textLines":1,"bbox":[706,226,476,34]}
+{"kind":"textbox","id":"sh/tovahoza","slide":14,"text":"A_norm이 Affiliate이면 _v_key를 B_norm으로 변경\n즉 Media Type 2로 매핑을 찾음\n성공 시 C_cleaned는 raw platform 유지\n실패 시 B_cleaned='Others'\nC_cleaned는 raw platform 유지","textPreview":"A_norm이 Affiliate이면 _v_key를 B_norm으로 변경 | 즉 Media Type 2로 매핑을 찾음 | 성공 시 C_cleaned는 raw platform 유지 | 실패 시 B_cleaned='Others' | C_cleaned는...","textChars":145,"textLines":5,"bbox":[706,270,476,316]}
+{"kind":"notes","id":"nt/bf67ls","slide":14,"text":""}
+{"kind":"slide","id":"sl/vnrvlm","slide":15,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/7adsji5s","slide":15,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/wval87ed","slide":15,"text":"Priority Scoring: 후보가 여러 개일 때 하나를 고르는 기준","textPreview":"Priority Scoring: 후보가 여러 개일 때 하나를 고르는 기준","textChars":40,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/pg3ex0nu","slide":15,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/e1w7mp0b","slide":15,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":15,"text":"PRIORITY","textPreview":"PRIORITY","textChars":8,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/psfil0rq","slide":15,"text":"동일 original_index에 여러 후보가 붙으면 priority 내림차순으로 정렬 후 첫 행만 남깁니다.","textPreview":"동일 original_index에 여러 후보가 붙으면 priority 내림차순으로 정렬 후 첫 행만 남깁니다.","textChars":61,"textLines":1,"bbox":[86,606,980,34]}
+{"kind":"table","id":"tb/h4byhgn2","slide":15,"name":"","rows":6,"cols":3,"preview":"점수 | 조건 | 해석","bbox":[70,194,1140,390]}
+{"kind":"notes","id":"nt/vnrvlm","slide":15,"text":""}
+{"kind":"slide","id":"sl/vglxnl","slide":16,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/18jqh0fe","slide":16,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/qh0fepkz","slide":16,"text":"Match 조건: NONE과 ANY의 의미","textPreview":"Match 조건: NONE과 ANY의 의미","textChars":23,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/j2t83itg","slide":16,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/8bat47y1","slide":16,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/1w7mp0bi","slide":16,"text":"MATCH RULE","textPreview":"MATCH RULE","textChars":10,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/jqh0fepk","slide":16,"text":"A/B/C 각각 a_match, b_match, c_match를 벡터로 계산한 뒤 np.select로 priority를 부여합니다.","textPreview":"A/B/C 각각 a_match, b_match, c_match를 벡터로 계산한 뒤 np.select로 priority를 부여합니다.","textChars":73,"textLines":1,"bbox":[88,580,1040,40]}
+{"kind":"table","id":"tb/fil0rqd4","slide":16,"name":"","rows":5,"cols":3,"preview":"표준값 | 판정 방식 | 사용 의도","bbox":[74,206,1132,340]}
+{"kind":"notes","id":"nt/vglxnl","slide":16,"text":""}
+{"kind":"slide","id":"sl/gbeanc","slide":17,"title":"GMO Cleansing Logic","textShapes":10}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":17,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/5gbq1ory","slide":17,"text":"실패와 보존: 클렌징 결과를 어떻게 채우는가","textPreview":"실패와 보존: 클렌징 결과를 어떻게 채우는가","textChars":24,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/cvixczed","slide":17,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/nyd0z610","slide":17,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":17,"text":"FALLBACK","textPreview":"FALLBACK","textChars":8,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/54zidony","slide":17,"bbox":[76,206,350,320]}
+{"kind":"shape","id":"sh/cj6tovah","slide":17,"bbox":[76,206,6,320]}
+{"kind":"textbox","id":"sh/judg7ads","slide":17,"text":"기본 결과","textPreview":"기본 결과","textChars":5,"textLines":1,"bbox":[98,224,306,34]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":17,"text":"A_cleaned, B_cleaned, C_cleaned에는 매핑표의 std_cols 값을 넣습니다.","textPreview":"A_cleaned, B_cleaned, C_cleaned에는 매핑표의 std_cols 값을 넣습니다.","textChars":56,"textLines":1,"bbox":[98,268,306,246]}
+{"kind":"shape","id":"sh/47y1kre1","slide":17,"bbox":[466,206,350,320]}
+{"kind":"shape","id":"sh/tsvu9kni","slide":17,"bbox":[466,206,6,320]}
+{"kind":"textbox","id":"sh/m1cfa9w3","slide":17,"text":"최종 NaN 방어","textPreview":"최종 NaN 방어","textChars":9,"textLines":1,"bbox":[488,224,306,34]}
+{"kind":"textbox","id":"sh/bm58z25k","slide":17,"text":"A_cleaned가 NaN이면 raw 3개 컬럼 값을 cleaned 컬럼에 그대로 복사합니다.","textPreview":"A_cleaned가 NaN이면 raw 3개 컬럼 값을 cleaned 컬럼에 그대로 복사합니다.","textChars":52,"textLines":1,"bbox":[488,268,306,246]}
+{"kind":"shape","id":"sh/4vmtwra5","slide":17,"bbox":[856,206,350,320]}
+{"kind":"shape","id":"sh/tgfmlkjm","slide":17,"bbox":[856,206,6,320]}
+{"kind":"textbox","id":"sh/mp0bi9s3","slide":17,"text":"이미 유효한 조합","textPreview":"이미 유효한 조합","textChars":9,"textLines":1,"bbox":[878,224,306,34]}
+{"kind":"textbox","id":"sh/bat47y1k","slide":17,"text":"raw A|B|C가 매핑표의 표준 조합과 같으면 cleaned도 raw 값으로 되돌립니다.","textPreview":"raw A|B|C가 매핑표의 표준 조합과 같으면 cleaned도 raw 값으로 되돌립니다.","textChars":50,"textLines":1,"bbox":[878,268,306,246]}
+{"kind":"textbox","id":"sh/4nap4r65","slide":17,"text":"이 설계 때문에 매핑 실패가 곧바로 데이터 소실로 이어지지 않고, 원본 값을 보존하면서 리포트로 추적합니다.","textPreview":"이 설계 때문에 매핑 실패가 곧바로 데이터 소실로 이어지지 않고, 원본 값을 보존하면서 리포트로 추적합니다.","textChars":60,"textLines":1,"bbox":[88,574,1040,44]}
+{"kind":"notes","id":"nt/gbeanc","slide":17,"text":""}
+{"kind":"slide","id":"sl/6xj6ac","slide":18,"title":"GMO Cleansing Logic","textShapes":7}
+{"kind":"textbox","id":"sh/0z61032l","slide":18,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/7ed8bat4","slide":18,"text":"MX Product Mapping: C_Key 기준","textPreview":"MX Product Mapping: C_Key 기준","textChars":28,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/itgfmlkj","slide":18,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/p8nqxs72","slide":18,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/0nuxc3yl","slide":18,"text":"MX PRODUCT","textPreview":"MX PRODUCT","textChars":10,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/72x4nap4","slide":18,"bbox":[76,208,520,390]}
+{"kind":"shape","id":"sh/ih4byhgn","slide":18,"bbox":[76,208,6,390]}
+{"kind":"textbox","id":"sh/p4r65wju","slide":18,"text":"기본 로직","textPreview":"기본 로직","textChars":5,"textLines":1,"bbox":[98,226,476,34]}
+{"kind":"textbox","id":"sh/wjudg7ad","slide":18,"text":"BU 컬럼이 원본에 없으면 MX 경로\nProduct Category/Series/Products 3개를 정규화\nProducts 정규화 값으로 C_Key merge\nPriority Scoring으로 최종 후보 선택\ndf_cleaned_final[BU] = 'MX'","textPreview":"BU 컬럼이 원본에 없으면 MX 경로 | Product Category/Series/Products 3개를 정규화 | Products 정규화 값으로 C_Key merge | Priority Scoring으로 최종 후보 선택 | df_cleaned...","textChars":146,"textLines":5,"bbox":[98,270,476,316]}
+{"kind":"shape","id":"sh/6tovahoz","slide":18,"bbox":[684,208,520,390]}
+{"kind":"shape","id":"sh/vahoza1g","slide":18,"bbox":[684,208,6,390]}
+{"kind":"textbox","id":"sh/ovahoza1","slide":18,"text":"후처리","textPreview":"후처리","textChars":3,"textLines":1,"bbox":[706,226,476,34]}
+{"kind":"textbox","id":"sh/dg7adsji","slide":18,"text":"Mindset 컬럼이 있으면 'cold' -> 'Cold'\nFunding 컬럼이 있으면 'gmo' -> 'GMO'\nFunding 컬럼이 있으면 'local' -> 'Local'\nformat_mx_data로 최종 컬럼 순서 고정\nProducts_cleaned -> Products로 덮어쓰기","textPreview":"Mindset 컬럼이 있으면 'cold' -> 'Cold' | Funding 컬럼이 있으면 'gmo' -> 'GMO' | Funding 컬럼이 있으면 'local' -> 'Local' | format_mx_data로 최종 컬럼 순서 고정 | Pr...","textChars":161,"textLines":5,"bbox":[706,270,476,316]}
+{"kind":"notes","id":"nt/6xj6ac","slide":18,"text":""}
+{"kind":"slide","id":"sl/oavq36","slide":19,"title":"GMO Cleansing Logic","textShapes":10}
+{"kind":"textbox","id":"sh/e1w7mp0b","slide":19,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/psfil0rq","slide":19,"text":"MX Rescue: Multi 또는 누락값 구제","textPreview":"MX Rescue: Multi 또는 누락값 구제","textChars":26,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/w7mp0bi9","slide":19,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/7adsji5s","slide":19,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/epkzupwb","slide":19,"text":"MX RESCUE","textPreview":"MX RESCUE","textChars":9,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/pg3ex0nu","slide":19,"bbox":[76,196,350,350]}
+{"kind":"shape","id":"sh/wval87ed","slide":19,"bbox":[76,196,6,350]}
+{"kind":"textbox","id":"sh/36hcrmhk","slide":19,"text":"대상","textPreview":"대상","textChars":2,"textLines":1,"bbox":[98,214,306,34]}
+{"kind":"textbox","id":"sh/eloj2t83","slide":19,"text":"A_cleaned가 'Multi'이거나 NaN인 행만 rescue 대상입니다. 전체 행을 다시 매핑하지 않고 필요한 행만 처리합니다.","textPreview":"A_cleaned가 'Multi'이거나 NaN인 행만 rescue 대상입니다. 전체 행을 다시 매핑하지 않고 필요한 행만 처리합니다.","textChars":74,"textLines":1,"bbox":[98,258,306,276]}
+{"kind":"shape","id":"sh/wra5gbq1","slide":19,"bbox":[466,196,350,350]}
+{"kind":"shape","id":"sh/lc7u54zi","slide":19,"bbox":[466,196,6,350]}
+{"kind":"textbox","id":"sh/eloj2t83","slide":19,"text":"lookup 구성","textPreview":"lookup 구성","textChars":9,"textLines":1,"bbox":[488,214,306,34]}
+{"kind":"textbox","id":"sh/36hcrmhk","slide":19,"text":"series_reverse_map은 유효한 Series -> (Category, Series)를 저장합니다. fallback_map은 Category -> (Category, Multi/Others)를 저장합니다.","textPreview":"series_reverse_map은 유효한 Series -> (Category, Series)를 저장합니다. fallback_map은 Category -> (Category, Multi/Others)를 저장합니다.","textChars":119,"textLines":1,"bbox":[488,258,306,276]}
+{"kind":"shape","id":"sh/wfyxobm5","slide":19,"bbox":[856,196,350,350]}
+{"kind":"shape","id":"sh/l0rqd4vm","slide":19,"bbox":[856,196,6,350]}
+{"kind":"textbox","id":"sh/ed8bat47","slide":19,"text":"적용 순서","textPreview":"적용 순서","textChars":5,"textLines":1,"bbox":[878,214,306,34]}
+{"kind":"textbox","id":"sh/7u54zido","slide":19,"text":"1. ser_lower가 series_reverse_map에 있으면 사용\n2. cat_lower가 fallback_map에 있으면 사용\n3. cat_lower가 series_reverse_map에 있으면 사용","textPreview":"1. ser_lower가 series_reverse_map에 있으면 사용 | 2. cat_lower가 fallback_map에 있으면 사용 | 3. cat_lower가 series_reverse_map에 있으면 사용","textChars":116,"textLines":3,"bbox":[878,258,306,276]}
+{"kind":"textbox","id":"sh/w7mp0bi9","slide":19,"text":"성공한 행은 A/B/C_cleaned를 새 값으로 덮고, C_cleaned는 rescue된 Series 값으로 설정합니다.","textPreview":"성공한 행은 A/B/C_cleaned를 새 값으로 덮고, C_cleaned는 rescue된 Series 값으로 설정합니다.","textChars":68,"textLines":1,"bbox":[88,582,1040,34]}
+{"kind":"notes","id":"nt/oavq36","slide":19,"text":""}
+{"kind":"slide","id":"sl/dmqw9z","slide":20,"title":"GMO Cleansing Logic","textShapes":7}
+{"kind":"textbox","id":"sh/il0rqd4v","slide":20,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/tcj6tova","slide":20,"text":"CE Product Mapping: A_Key 기준으로 시작","textPreview":"CE Product Mapping: A_Key 기준으로 시작","textChars":33,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/0rqd4vmt","slide":20,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/byhgn29g","slide":20,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/idonyd0z","slide":20,"text":"CE PRODUCT","textPreview":"CE PRODUCT","textChars":10,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/t47y1kre","slide":20,"bbox":[76,208,520,390]}
+{"kind":"shape","id":"sh/0je9cvix","slide":20,"bbox":[76,208,6,390]}
+{"kind":"textbox","id":"sh/bulwval8","slide":20,"text":"CE 진입 조건","textPreview":"CE 진입 조건","textChars":8,"textLines":1,"bbox":[98,226,476,34]}
+{"kind":"textbox","id":"sh/i9s36hcr","slide":20,"text":"원본 CSV에 BU 컬럼이 있으면 CE 경로\nrun_ce_product_cleansing() 사용\nProduct Category와 Product Series만 정규화\nProducts는 제품명 원본 보존 성격이 강함\nA_Key로 Category를 먼저 찾음","textPreview":"원본 CSV에 BU 컬럼이 있으면 CE 경로 | run_ce_product_cleansing() 사용 | Product Category와 Product Series만 정규화 | Products는 제품명 원본 보존 성격이 강함 | A_Key로 Ca...","textChars":142,"textLines":5,"bbox":[98,270,476,316]}
+{"kind":"shape","id":"sh/0fepkzup","slide":20,"bbox":[684,208,520,390]}
+{"kind":"shape","id":"sh/p0bi9s36","slide":20,"bbox":[684,208,6,390]}
+{"kind":"textbox","id":"sh/i9s36hcr","slide":20,"text":"결과 컬럼","textPreview":"결과 컬럼","textChars":5,"textLines":1,"bbox":[706,226,476,34]}
+{"kind":"textbox","id":"sh/bulwval8","slide":20,"text":"Product Category_cleaned\nProduct Series_cleaned\nProducts_cleaned\nNON_CE_CATEGORY는 실패 표시용 임시 값\n실패 시 raw Category/Series로 되돌림","textPreview":"Product Category_cleaned | Product Series_cleaned | Products_cleaned | NON_CE_CATEGORY는 실패 표시용 임시 값 | 실패 시 raw Category/Series로 되돌림","textChars":123,"textLines":5,"bbox":[706,270,476,316]}
+{"kind":"notes","id":"nt/dmqw9z","slide":20,"text":""}
+{"kind":"slide","id":"sl/yhoe30","slide":21,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/4r65wjud","slide":21,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":21,"text":"CE lookup map: 중복 Series 오매핑 방지","textPreview":"CE lookup map: 중복 Series 오매핑 방지","textChars":31,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/mlkjm1cf","slide":21,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/xkf6dcbu","slide":21,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/4zidonyd","slide":21,"text":"CE SAFETY","textPreview":"CE SAFETY","textChars":9,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/mtwra5gb","slide":21,"text":"핵심 안전장치: 여러 category에 등장하는 series는 global lookup에 넣지 않아 잘못된 category 추론을 막습니다.","textPreview":"핵심 안전장치: 여러 category에 등장하는 series는 global lookup에 넣지 않아 잘못된 category 추론을 막습니다.","textChars":78,"textLines":1,"bbox":[88,592,1040,38]}
+{"kind":"table","id":"tb/ytsvu9kn","slide":21,"name":"","rows":6,"cols":3,"preview":"맵 | 만드는 방식 | 쓰임","bbox":[70,204,1140,360]}
+{"kind":"notes","id":"nt/yhoe30","slide":21,"text":""}
+{"kind":"slide","id":"sl/99rz9c","slide":22,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/8bat47y1","slide":22,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/jqh0fepk","slide":22,"text":"CE row별 판정 순서","textPreview":"CE row별 판정 순서","textChars":13,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/q5o7qpg3","slide":22,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/18jqh0fe","slide":22,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/8nqxs72x","slide":22,"text":"CE DECISION","textPreview":"CE DECISION","textChars":11,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/qh0fepkz","slide":22,"text":"Products_cleaned는 NON_CE_CATEGORY가 아니면 raw Products 값을 유지합니다.","textPreview":"Products_cleaned는 NON_CE_CATEGORY가 아니면 raw Products 값을 유지합니다.","textChars":61,"textLines":1,"bbox":[90,620,900,30]}
+{"kind":"table","id":"tb/29gr2p8n","slide":22,"name":"","rows":6,"cols":3,"preview":"상황 | 판정 | 결과","bbox":[72,194,1136,406]}
+{"kind":"notes","id":"nt/99rz9c","slide":22,"text":""}
+{"kind":"slide","id":"sl/kuiolf","slide":23,"title":"GMO Cleansing Logic","textShapes":10}
+{"kind":"textbox","id":"sh/0bi9s36h","slide":23,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/7qpg3ex0","slide":23,"text":"CE BU 보정과 keyword filter","textPreview":"CE BU 보정과 keyword filter","textChars":24,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/i5sneloj","slide":23,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/p4r65wju","slide":23,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/wjudg7ad","slide":23,"text":"CE POST","textPreview":"CE POST","textChars":7,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/7y1kre1w","slide":23,"bbox":[76,196,350,350]}
+{"kind":"shape","id":"sh/ed8v6psf","slide":23,"bbox":[76,196,6,350]}
+{"kind":"textbox","id":"sh/p8nqxs72","slide":23,"text":"BU 초기화","textPreview":"BU 초기화","textChars":6,"textLines":1,"bbox":[98,214,306,34]}
+{"kind":"textbox","id":"sh/0nuxc3yl","slide":23,"text":"assign_ce_division()은 raw BU를 가져와 strip 후 무조건 대문자로 바꿉니다. BU가 없으면 MX로 둡니다.","textPreview":"assign_ce_division()은 raw BU를 가져와 strip 후 무조건 대문자로 바꿉니다. BU가 없으면 MX로 둡니다.","textChars":73,"textLines":1,"bbox":[98,258,306,276]}
+{"kind":"shape","id":"sh/ih4byhgn","slide":23,"bbox":[466,196,350,350]}
+{"kind":"shape","id":"sh/72x4nap4","slide":23,"bbox":[466,196,6,350]}
+{"kind":"textbox","id":"sh/0nuxc3yl","slide":23,"text":"DIV_RULES override","textPreview":"DIV_RULES override","textChars":18,"textLines":1,"bbox":[488,214,306,34]}
+{"kind":"textbox","id":"sh/p8nqxs72","slide":23,"text":"Product Category_cleaned 기준으로 VD/DA/MX category 목록에 포함되면 BU를 해당 division으로 덮어씁니다.","textPreview":"Product Category_cleaned 기준으로 VD/DA/MX category 목록에 포함되면 BU를 해당 division으로 덮어씁니다.","textChars":81,"textLines":1,"bbox":[488,258,306,276]}
+{"kind":"shape","id":"sh/itgfmlkj","slide":23,"bbox":[856,196,350,350]}
+{"kind":"shape","id":"sh/7ed8bat4","slide":23,"bbox":[856,196,6,350]}
+{"kind":"textbox","id":"sh/0z61032l","slide":23,"text":"IGNORE_KEYWORDS","textPreview":"IGNORE_KEYWORDS","textChars":15,"textLines":1,"bbox":[878,214,306,34]}
+{"kind":"textbox","id":"sh/pkzupwb2","slide":23,"text":"config.IGNORE_KEYWORDS는 소문자 기준 삭제 대상입니다. 현재 smartphones가 있으면 해당 행을 제거합니다.","textPreview":"config.IGNORE_KEYWORDS는 소문자 기준 삭제 대상입니다. 현재 smartphones가 있으면 해당 행을 제거합니다.","textChars":73,"textLines":1,"bbox":[878,258,306,276]}
+{"kind":"textbox","id":"sh/i5sneloj","slide":23,"text":"필터로 행이 줄어들 수 있으므로 summary 생성 시 reporting.py는 raw/cleaned 공통 index만 비교합니다.","textPreview":"필터로 행이 줄어들 수 있으므로 summary 생성 시 reporting.py는 raw/cleaned 공통 index만 비교합니다.","textChars":73,"textLines":1,"bbox":[88,582,1040,34]}
+{"kind":"notes","id":"nt/kuiolf","slide":23,"text":""}
+{"kind":"slide","id":"sl/szkqkp","slide":24,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/kzupwb2h","slide":24,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/re1w7mp0","slide":24,"text":"MX/CE 최종 포맷터","textPreview":"MX/CE 최종 포맷터","textChars":12,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/2t83itgf","slide":24,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/9w3m94fu","slide":24,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/kb6xkf6d","slide":24,"text":"FORMAT","textPreview":"FORMAT","textChars":6,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/25kb6xkf","slide":24,"text":"포맷터는 개별 cleaned 결과 CSV의 컬럼명과 컬럼 순서를 고정하는 기준입니다.","textPreview":"포맷터는 개별 cleaned 결과 CSV의 컬럼명과 컬럼 순서를 고정하는 기준입니다.","textChars":47,"textLines":1,"bbox":[88,594,1040,34]}
+{"kind":"table","id":"tb/e1w7mp0b","slide":24,"name":"","rows":6,"cols":3,"preview":"항목 | format_mx_data | format_ce_data","bbox":[70,206,1140,358]}
+{"kind":"notes","id":"nt/szkqkp","slide":24,"text":""}
+{"kind":"slide","id":"sl/l0i90k","slide":25,"title":"GMO Cleansing Logic","textShapes":7}
+{"kind":"textbox","id":"sh/7adsji5s","slide":25,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/wval87ed","slide":25,"text":"검증용 컬럼 배치: insert_cleaned_left_of_raw","textPreview":"검증용 컬럼 배치: insert_cleaned_left_of_raw","textChars":37,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/pg3ex0nu","slide":25,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/e1w7mp0b","slide":25,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":25,"text":"VERIFY","textPreview":"VERIFY","textChars":6,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/w7mp0bi9","slide":25,"bbox":[76,208,520,390]}
+{"kind":"shape","id":"sh/psfil0rq","slide":25,"bbox":[76,208,6,390]}
+{"kind":"textbox","id":"sh/ed8bat47","slide":25,"text":"왜 필요한가","textPreview":"왜 필요한가","textChars":6,"textLines":1,"bbox":[98,226,476,34]}
+{"kind":"textbox","id":"sh/7u54zido","slide":25,"text":"운영자가 결과 CSV를 열었을 때\ncleaned 값과 raw 값을 바로 비교해야 함\n따라서 *_cleaned 컬럼을 원본 컬럼 왼쪽에 배치\n매핑 품질 확인 시간이 크게 줄어듦","textPreview":"운영자가 결과 CSV를 열었을 때 | cleaned 값과 raw 값을 바로 비교해야 함 | 따라서 *_cleaned 컬럼을 원본 컬럼 왼쪽에 배치 | 매핑 품질 확인 시간이 크게 줄어듦","textChars":97,"textLines":4,"bbox":[98,270,476,316]}
+{"kind":"shape","id":"sh/3q5o7qpg","slide":25,"bbox":[684,208,520,390]}
+{"kind":"shape","id":"sh/e9cvixcz","slide":25,"bbox":[684,208,6,390]}
+{"kind":"textbox","id":"sh/lwval87e","slide":25,"text":"동작 방식","textPreview":"동작 방식","textChars":5,"textLines":1,"bbox":[706,226,476,34]}
+{"kind":"textbox","id":"sh/wb2hwfyx","slide":25,"text":"1. *_cleaned 컬럼 집합 추출\n2. base 컬럼 순서대로 순회\n3. target_clean이 있으면 먼저 추가\n4. 그 다음 raw 컬럼 추가\n5. 남은 cleaned 컬럼은 마지막에 추가","textPreview":"1. *_cleaned 컬럼 집합 추출 | 2. base 컬럼 순서대로 순회 | 3. target_clean이 있으면 먼저 추가 | 4. 그 다음 raw 컬럼 추가 | 5. 남은 cleaned 컬럼은 마지막에 추가","textChars":111,"textLines":5,"bbox":[706,270,476,316]}
+{"kind":"notes","id":"nt/l0i90k","slide":25,"text":""}
+{"kind":"slide","id":"sl/3takly","slide":26,"title":"GMO Cleansing Logic","textShapes":10}
+{"kind":"textbox","id":"sh/25kb6xkf","slide":26,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/9w3m94fu","slide":26,"text":"변경 요약 리포트: create_change_summary","textPreview":"변경 요약 리포트: create_change_summary","textChars":32,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/kb6xkf6d","slide":26,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/re1w7mp0","slide":26,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/2t83itgf","slide":26,"text":"SUMMARY","textPreview":"SUMMARY","textChars":7,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/9knih4by","slide":26,"bbox":[76,194,350,350]}
+{"kind":"shape","id":"sh/kzupwb2h","slide":26,"bbox":[76,194,6,350]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":26,"text":"Index alignment","textPreview":"Index alignment","textChars":15,"textLines":1,"bbox":[98,212,306,34]}
+{"kind":"textbox","id":"sh/2p8nqxs7","slide":26,"text":"필터로 cleaned 행이 줄었을 수 있으므로 raw와 cleaned의 공통 index만 비교합니다.","textPreview":"필터로 cleaned 행이 줄었을 수 있으므로 raw와 cleaned의 공통 index만 비교합니다.","textChars":56,"textLines":1,"bbox":[98,256,306,276]}
+{"kind":"shape","id":"sh/gvy90je9","slide":26,"bbox":[466,194,350,350]}
+{"kind":"shape","id":"sh/9gr2p8nq","slide":26,"bbox":[466,194,6,350]}
+{"kind":"textbox","id":"sh/2p8nqxs7","slide":26,"text":"Wide context","textPreview":"Wide context","textChars":12,"textLines":1,"bbox":[488,212,306,34]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":26,"text":"cleaned 컬럼과 raw 컬럼을 한 줄에 나란히 놓습니다. 예: Product Category_cleaned, Product Category.","textPreview":"cleaned 컬럼과 raw 컬럼을 한 줄에 나란히 놓습니다. 예: Product Category_cleaned, Product Category.","textChars":81,"textLines":1,"bbox":[488,256,306,276]}
+{"kind":"shape","id":"sh/kjm1cfa9","slide":26,"bbox":[856,194,350,350]}
+{"kind":"shape","id":"sh/94fu18jq","slide":26,"bbox":[856,194,6,350]}
+{"kind":"textbox","id":"sh/2hwfyxob","slide":26,"text":"Counts","textPreview":"Counts","textChars":6,"textLines":1,"bbox":[878,212,306,34]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":26,"text":"하나라도 달라진 행만 남긴 뒤 groupby로 동일 변경 패턴을 묶고 Counts를 계산합니다.","textPreview":"하나라도 달라진 행만 남긴 뒤 groupby로 동일 변경 패턴을 묶고 Counts를 계산합니다.","textChars":53,"textLines":1,"bbox":[878,256,306,276]}
+{"kind":"textbox","id":"sh/kb6xkf6d","slide":26,"text":"summary_prod는 PRODUCT_COLS, summary_media는 MEDIA_COLS를 기준으로 생성됩니다.","textPreview":"summary_prod는 PRODUCT_COLS, summary_media는 MEDIA_COLS를 기준으로 생성됩니다.","textChars":66,"textLines":1,"bbox":[88,580,1040,36]}
+{"kind":"notes","id":"nt/3takly","slide":26,"text":""}
+{"kind":"slide","id":"sl/o0hoi7","slide":27,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/o7qpg3ex","slide":27,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/vmtwra5g","slide":27,"text":"미매핑 제품 리포트: build_unmapped_product_rows","textPreview":"미매핑 제품 리포트: build_unmapped_product_rows","textChars":39,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/61032lsz","slide":27,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/d4vmtwra","slide":27,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/oj2t83it","slide":27,"text":"UNMAPPED PRODUCT","textPreview":"UNMAPPED PRODUCT","textChars":16,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/6dcbulwv","slide":27,"text":"MX는 key_source_col='Products', CE는 key_source_col='Product Category'를 사용합니다.","textPreview":"MX는 key_source_col='Products', CE는 key_source_col='Product Category'를 사용합니다.","textChars":76,"textLines":1,"bbox":[88,590,1040,34]}
+{"kind":"table","id":"tb/m58z25kb","slide":27,"name":"","rows":6,"cols":2,"preview":"단계 | 내용","bbox":[70,204,1140,360]}
+{"kind":"notes","id":"nt/o0hoi7","slide":27,"text":""}
+{"kind":"slide","id":"sl/q9bvkb","slide":28,"title":"GMO Cleansing Logic","textShapes":7}
+{"kind":"textbox","id":"sh/32lszqtc","slide":28,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/sneloj2t","slide":28,"text":"미매핑 Media/Product 최종 저장","textPreview":"미매핑 Media/Product 최종 저장","textChars":23,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/l87ed8ba","slide":28,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/at47y1kr","slide":28,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/3ex0nuxc","slide":28,"text":"UNMAPPED REPORTS","textPreview":"UNMAPPED REPORTS","textChars":16,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/szqtcj6t","slide":28,"bbox":[76,208,520,390]}
+{"kind":"shape","id":"sh/lkjm1cfa","slide":28,"bbox":[76,208,6,390]}
+{"kind":"textbox","id":"sh/ex0nuxc3","slide":28,"text":"Media","textPreview":"Media","textChars":5,"textLines":1,"bbox":[98,226,476,34]}
+{"kind":"textbox","id":"sh/3itgfmlk","slide":28,"text":"각 파일의 df_unmapped_media에서 Unmapped_Key 수집\n전체 실행 동안 total_unmapped_media set에 누적\nsave_unmapped_reports에서 Unmapped_Media.csv 저장\n컬럼명: Unmapped_Media_Key","textPreview":"각 파일의 df_unmapped_media에서 Unmapped_Key 수집 | 전체 실행 동안 total_unmapped_media set에 누적 | save_unmapped_reports에서 Unmapped_Media.csv 저장 | 컬럼명: ...","textChars":149,"textLines":4,"bbox":[98,270,476,316]}
+{"kind":"shape","id":"sh/bm58z25k","slide":28,"bbox":[684,208,520,390]}
+{"kind":"shape","id":"sh/m1cfa9w3","slide":28,"bbox":[684,208,6,390]}
+{"kind":"textbox","id":"sh/tsvu9kni","slide":28,"text":"Product","textPreview":"Product","textChars":7,"textLines":1,"bbox":[706,226,476,34]}
+{"kind":"textbox","id":"sh/47y1kre1","slide":28,"text":"파일별 build_unmapped_product_rows 결과를 list에 누적\n전체 종료 전 concat + drop_duplicates\nsave_unmapped_reports에서 Unmapped_Products.csv 저장\n매핑 Excel 보완 후보로 사용","textPreview":"파일별 build_unmapped_product_rows 결과를 list에 누적 | 전체 종료 전 concat + drop_duplicates | save_unmapped_reports에서 Unmapped_Products.csv 저장 | 매핑 E...","textChars":145,"textLines":4,"bbox":[706,270,476,316]}
+{"kind":"notes","id":"nt/q9bvkb","slide":28,"text":""}
+{"kind":"slide","id":"sl/jbxvdz","slide":29,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":29,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":29,"text":"개별 파일 저장 규칙","textPreview":"개별 파일 저장 규칙","textChars":11,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/c3ylc7u5","slide":29,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/j6tovaho","slide":29,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/ulwval87","slide":29,"text":"SAVE","textPreview":"SAVE","textChars":4,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":29,"text":"save_to_csv_separated는 빈 DataFrame은 저장하지 않습니다. 따라서 변경 요약이 없으면 summary 파일이 없을 수 있습니다.","textPreview":"save_to_csv_separated는 빈 DataFrame은 저장하지 않습니다. 따라서 변경 요약이 없으면 summary 파일이 없을 수 있습니다.","textChars":84,"textLines":1,"bbox":[88,590,1040,42]}
+{"kind":"table","id":"tb/k3q5o7qp","slide":29,"name":"","rows":6,"cols":2,"preview":"항목 | 규칙","bbox":[70,204,1140,360]}
+{"kind":"notes","id":"nt/jbxvdz","slide":29,"text":""}
+{"kind":"slide","id":"sl/6wsqmr","slide":30,"title":"GMO Cleansing Logic","textShapes":10}
+{"kind":"textbox","id":"sh/q1orytsv","slide":30,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/xs72x4na","slide":30,"text":"오류 처리와 로그 읽는 순서","textPreview":"오류 처리와 로그 읽는 순서","textChars":15,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/87ed8bat","slide":30,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/je9cvixc","slide":30,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":30,"text":"ERROR HANDLING","textPreview":"ERROR HANDLING","textChars":14,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"shape","id":"sh/1gvy90je","slide":30,"bbox":[76,194,350,350]}
+{"kind":"shape","id":"sh/8z25kb6x","slide":30,"bbox":[76,194,6,350]}
+{"kind":"textbox","id":"sh/fa9w3m94","slide":30,"text":"Import 실패","textPreview":"Import 실패","textChars":9,"textLines":1,"bbox":[98,212,306,34]}
+{"kind":"textbox","id":"sh/qpg3ex0n","slide":30,"text":"필수 모듈 import 실패는 FATAL 로그 후 sys.exit(1)로 전체 종료합니다.","textPreview":"필수 모듈 import 실패는 FATAL 로그 후 sys.exit(1)로 전체 종료합니다.","textChars":50,"textLines":1,"bbox":[98,256,306,276]}
+{"kind":"shape","id":"sh/wjudg7ad","slide":30,"bbox":[466,194,350,350]}
+{"kind":"shape","id":"sh/p4r65wju","slide":30,"bbox":[466,194,6,350]}
+{"kind":"textbox","id":"sh/ed8v6psf","slide":30,"text":"파일 로드 실패","textPreview":"파일 로드 실패","textChars":8,"textLines":1,"bbox":[488,212,306,34]}
+{"kind":"textbox","id":"sh/7y1kre1w","slide":30,"text":"load_csv_safely가 None을 반환하면 해당 파일만 로드 실패 로그를 남기고 continue합니다.","textPreview":"load_csv_safely가 None을 반환하면 해당 파일만 로드 실패 로그를 남기고 continue합니다.","textChars":61,"textLines":1,"bbox":[488,256,306,276]}
+{"kind":"shape","id":"sh/0bi9s36h","slide":30,"bbox":[856,194,350,350]}
+{"kind":"shape","id":"sh/pwb2hwfy","slide":30,"bbox":[856,194,6,350]}
+{"kind":"textbox","id":"sh/i5sneloj","slide":30,"text":"파일 처리 중 예외","textPreview":"파일 처리 중 예외","textChars":10,"textLines":1,"bbox":[878,212,306,34]}
+{"kind":"textbox","id":"sh/7qpg3ex0","slide":30,"text":"개별 파일 try/except가 예외와 stack trace를 남기고 다음 파일로 넘어갑니다.","textPreview":"개별 파일 try/except가 예외와 stack trace를 남기고 다음 파일로 넘어갑니다.","textChars":52,"textLines":1,"bbox":[878,256,306,276]}
+{"kind":"textbox","id":"sh/0z61032l","slide":30,"text":"장애 대응은 cleansing_log.txt에서 파일명, 단계명, 'Skip', 'Alert', 'FATAL' 키워드를 먼저 확인합니다.","textPreview":"장애 대응은 cleansing_log.txt에서 파일명, 단계명, 'Skip', 'Alert', 'FATAL' 키워드를 먼저 확인합니다.","textChars":76,"textLines":1,"bbox":[88,582,1040,34]}
+{"kind":"notes","id":"nt/6wsqmr","slide":30,"text":""}
+{"kind":"slide","id":"sl/632ad4","slide":31,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":31,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/j6tovaho","slide":31,"text":"매핑 수정 시 확인해야 할 것","textPreview":"매핑 수정 시 확인해야 할 것","textChars":16,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/ulwval87","slide":31,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/1kre1w7m","slide":31,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/c3ylc7u5","slide":31,"text":"OPERATE","textPreview":"OPERATE","textChars":7,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":31,"text":"Excel 매핑을 수정한 뒤에는 별도 수동 JSON 편집이 아니라 run.py 재실행으로 JSON 캐시를 다시 만들게 하는 것이 원칙입니다.","textPreview":"Excel 매핑을 수정한 뒤에는 별도 수동 JSON 편집이 아니라 run.py 재실행으로 JSON 캐시를 다시 만들게 하는 것이 원칙입니다.","textChars":78,"textLines":1,"bbox":[88,606,1040,34]}
+{"kind":"table","id":"tb/e1w7mp0b","slide":31,"name":"","rows":7,"cols":3,"preview":"상황 | 수정 대상 | 확인할 key","bbox":[74,196,1132,390]}
+{"kind":"notes","id":"nt/632ad4","slide":31,"text":""}
+{"kind":"slide","id":"sl/v2tjdg","slide":32,"title":"GMO Cleansing Logic","textShapes":3}
+{"kind":"textbox","id":"sh/re1w7mp0","slide":32,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/kzupwb2h","slide":32,"text":"운영 체크리스트: 클렌징 산출물까지만","textPreview":"운영 체크리스트: 클렌징 산출물까지만","textChars":20,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/9knih4by","slide":32,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/25kb6xkf","slide":32,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/rqd4vmtw","slide":32,"text":"CHECKLIST","textPreview":"CHECKLIST","textChars":9,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"table","id":"tb/hk3q5o7q","slide":32,"name":"","rows":7,"cols":5,"preview":"순서 | 작업 | 성공 기준 | 실패 신호 | 조치","bbox":[58,188,1164,420]}
+{"kind":"notes","id":"nt/v2tjdg","slide":32,"text":""}
+{"kind":"slide","id":"sl/yb3xcl","slide":33,"title":"GMO Cleansing Logic","textShapes":4}
+{"kind":"textbox","id":"sh/bat47y1k","slide":33,"text":"GMO Cleansing Logic","textPreview":"GMO Cleansing Logic","textChars":19,"textLines":1,"bbox":[64,32,520,28]}
+{"kind":"textbox","id":"sh/4vmtwra5","slide":33,"text":"핵심 함수 빠른 색인","textPreview":"핵심 함수 빠른 색인","textChars":11,"textLines":1,"bbox":[64,70,1050,62]}
+{"kind":"shape","id":"sh/tgfmlkjm","slide":33,"bbox":[64,148,1152,1]}
+{"kind":"shape","id":"sh/m1cfa9w3","slide":33,"bbox":[64,166,180,32]}
+{"kind":"textbox","id":"sh/bm58z25k","slide":33,"text":"INDEX","textPreview":"INDEX","textChars":5,"textLines":1,"bbox":[78,172,152,22]}
+{"kind":"textbox","id":"sh/tsvu9kni","slide":33,"text":"이 색인은 입력, 전처리, 매핑, 리포트 저장에 직접 관여하는 함수 기준입니다.","textPreview":"이 색인은 입력, 전처리, 매핑, 리포트 저장에 직접 관여하는 함수 기준입니다.","textChars":44,"textLines":1,"bbox":[88,622,1040,26]}
+{"kind":"table","id":"tb/tovahoza","slide":33,"name":"","rows":8,"cols":3,"preview":"파일 | 함수 | 역할","bbox":[70,190,1140,410]}
+{"kind":"notes","id":"nt/yb3xcl","slide":33,"text":""}

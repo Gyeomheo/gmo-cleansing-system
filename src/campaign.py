@@ -10,9 +10,11 @@ campaign.py
     법인       SETK 등. 비우거나 * 면 모든 법인
     구분       MX / CE
     PR         제품 코드(대소문자 무시)
-    SB         세부 분류 코드. 비우면 아무거나
+    SB         세부 분류 코드. 비우면 아무거나. SB 만 있는 규칙은 가장 마지막(다른 규칙이 안 맞을 때)
     키워드     캠페인명 · Product Series · Products 원본 어디든 들어 있으면(대소문자 · 기호 무시). 비우면 안 봄
                '|' = 그중 하나, '+' = 모두.  예) s26|f1h26 + buds  → (s26 또는 f1h26) 그리고 buds
+               '#' 로 시작하면 코드 단어 — 앞뒤가 글자 · 숫자가 아닐 때만(코드끼리 붙은 q8h8b8 은 됨)
+                   예) #h8 → 'f2h26-h8' · 'Q8H8B8' 은 맞고 'Watch8' 은 아님
     제외 키워드  이 중 하나라도 있으면 규칙을 안 씀('|' 로 여러 개)   예) Watch Ultra2 규칙에 watch7|watch8
     Category · Series · Products   채울 값. Products 를 비우면 그대로 둔다
     시작일     이 날짜 이후 행만(YYYY-MM-DD). 비우면 전체        예) Watch Ultra 는 2026-07-01 부터 Watch Ultra2
@@ -68,15 +70,16 @@ def load_rules(path: Path) -> pd.DataFrame:
     for c in ('PR', 'SB'):
         df[c] = df[c].str.strip().str.lower()
     # 키워드 'a|b + c' → [[a, b], [c]]  (그룹끼리는 모두, 그룹 안은 하나)
-    df['kw'] = df['키워드'].map(lambda v: [g for g in ([_squash(k) for k in grp.split('|') if _squash(k)]
+    df['kw'] = df['키워드'].map(lambda v: [g for g in ([_key(k) for k in grp.split('|') if _key(k)]
                                                    for grp in str(v).split('+')) if g])
     df['bundle'] = (df['kw'].str.len() > 1) | df['원본보다 우선'].str.strip().str.upper().isin(ON)
     df['since'] = df['시작일'].str.strip().str[:10]
-    df['ex'] = df['제외 키워드'].map(lambda v: [_squash(k) for k in str(v).split('|') if _squash(k)])
-    df = df[(df['PR'] != '') | (df['kw'].str.len() > 0)]
-    # 구체적인 규칙 먼저: 번들 +8, 키워드 +4, 법인 지정 +2, SB 지정 +1
+    df['ex'] = df['제외 키워드'].map(lambda v: [_key(k) for k in str(v).split('|') if _key(k)])
+    df = df[(df['PR'] != '') | (df['SB'] != '') | (df['kw'].str.len() > 0)]
+    sb_only = (df['PR'] == '') & (df['kw'].str.len() == 0)
+    # 구체적인 규칙 먼저: 번들 +8, 키워드 +4, 법인 지정 +2, SB 지정 +1, SB 만 있는 규칙 −2(PR 규칙 뒤)
     df['_rank'] = (df['bundle'] * 8 + (df['kw'].str.len() > 0) * 4
-                   + (df['법인'] != '') * 2 + (df['SB'] != '') * 1)
+                   + (df['법인'] != '') * 2 + (df['SB'] != '') * 1 - sb_only * 2)
     df = df.sort_values('_rank', ascending=False, kind='stable')
     logging.info(f"'{path.name}' 로드 완료. (사용 규칙 {len(df)}개)")
     return df
@@ -87,11 +90,28 @@ def _squash(v) -> str:
     return re.sub(r'[^a-z0-9]', '', str(v).lower())
 
 
+def _key(v) -> str:
+    """키워드 하나 — '#' 로 시작하면 코드 단어('#' + 영숫자), 아니면 _squash."""
+    v = str(v).strip()
+    if v.startswith('#'):
+        return '#' + _squash(v[1:]) if _squash(v[1:]) else ''
+    return _squash(v)
+
+
+def _has(k: str, squashed: pd.Series, text: pd.Series) -> pd.Series:
+    if k.startswith('#'):
+        # 앞뒤가 글자 · 숫자가 아니거나, '글자+숫자' 코드끼리만 붙어 있을 때
+        pat = rf'(?<![a-z0-9])(?:[a-z]\d+)*{re.escape(k[1:])}(?:[a-z]\d+)*(?![a-z0-9])'
+        return text.str.contains(pat, regex=True)
+    return squashed.str.contains(k, regex=False)
+
+
 def _lower(s: pd.Series) -> pd.Series:
     return s.fillna('').astype(str).str.strip().str.lower()
 
 
-def _rule_rows(r, codes: pd.DataFrame, squashed: pd.Series, sub: pd.Series, dates: pd.Series) -> pd.Series:
+def _rule_rows(r, codes: pd.DataFrame, squashed: pd.Series, sub: pd.Series, dates: pd.Series,
+               text: pd.Series) -> pd.Series:
     """규칙 r 의 조건(PR · SB · 법인 · 키워드)에 맞는 행."""
     m = pd.Series(True, index=codes.index)
     if r.PR:
@@ -103,9 +123,9 @@ def _rule_rows(r, codes: pd.DataFrame, squashed: pd.Series, sub: pd.Series, date
     if r.since:
         m &= dates >= r.since
     for group in r.kw:
-        m &= pd.concat([squashed.str.contains(k, regex=False) for k in group], axis=1).any(axis=1)
+        m &= pd.concat([_has(k, squashed, text) for k in group], axis=1).any(axis=1)
     for k in r.ex:
-        m &= ~squashed.str.contains(k, regex=False)
+        m &= ~_has(k, squashed, text)
     return m
 
 
@@ -129,7 +149,8 @@ def apply_campaign_rules(df: pd.DataFrame, kind: str, rules: pd.DataFrame):
     for c in ('Product Series', 'Products'):
         if c in df.columns:
             text = text + ' ' + df[c].fillna('').astype(str)
-    squashed = text.str.lower().str.replace(r'[^a-z0-9]', '', regex=True)
+    text = text.str.lower()
+    squashed = text.str.replace(r'[^a-z0-9]', '', regex=True)
     dates = df.get('Date', pd.Series('', index=df.index)).fillna('').astype(str).str[:10]
     sub = df.get('Subsidiary', pd.Series('', index=df.index)).fillna('').astype(str).str.strip().str.upper()
     before = df[[CAT, SER] + ([PRD] if PRD in df.columns else [])].copy()
@@ -138,7 +159,7 @@ def apply_campaign_rules(df: pd.DataFrame, kind: str, rules: pd.DataFrame):
     proposed = pd.DataFrame('', index=df.index, columns=[CAT, SER])
 
     for r in rules.itertuples(index=False):
-        m = ~taken & _rule_rows(r, codes, squashed, sub, dates)
+        m = ~taken & _rule_rows(r, codes, squashed, sub, dates, text)
         if not m.any():
             continue
         cat_ok = is_generic(df[CAT]) | (_lower(df[CAT]) == r.Category.lower())

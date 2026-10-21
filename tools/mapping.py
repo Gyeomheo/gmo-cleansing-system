@@ -12,6 +12,9 @@
         원본 값 하나 → 표준 3칸. 키(C_Key/A_Key/F_Key)는 파이프라인과 같은 정규화로 자동 계산
     python tools/mapping.py test MX --cat Smartphones --series "S26 Series" --value "S26 FE"
         지금 매핑으로 그 값이 어떻게 클렌징되는지
+    python tools/mapping.py retire MX "S24 Series" "Other S Series"
+        세대가 밀리면 그 시리즈(표준2)로 가던 행을 전부 다른 시리즈로(백업 후). 제품명(표준3)은 그대로.
+        마스터 · 취합본 과거 행까지 바꾸려면 다음 실행을 --remap 으로
 
 원본 값은 MX = Products, CE = Product Category, MEDIA = Media Platform
 (Media Type 1 이 Affiliate 면 Media Type 2).
@@ -304,6 +307,35 @@ def add_rules(items: list[tuple[str, str, list[str]]], notes: list[str] | None =
     return added
 
 
+def retire_series(kind: str, old: str, new: str) -> list[tuple[str, str]]:
+    """표준2(시리즈)가 old 인 매핑 행을 모두 new 로 — 백업 후 서식 그대로."""
+    from openpyxl import load_workbook
+
+    path, cols = KINDS[kind]
+    if is_locked(path):
+        print(f"  ✖ {path.name} 이(가) Excel 에서 열려 있음 — 닫고 다시")
+        return 0
+    BACKUP.mkdir(exist_ok=True)
+    shutil.copy2(path, BACKUP / f"{path.stem}_{datetime.now():%Y%m%d_%H%M%S}{path.suffix}")
+    wb = load_workbook(path)
+    ws = wb.worksheets[0]
+    header = [c.value for c in ws[1]]
+    ki, ci, si = (header.index(cols["key"]), header.index(cols["std_cols"][0]),
+                  header.index(cols["std_cols"][1]))
+    hits = []                                            # (키, 표준1)
+    for row in ws.iter_rows(min_row=2):
+        if str(row[si].value or "").strip() == old:
+            row[si].value = new
+            hits.append((str(row[ki].value), str(row[ci].value or "")))
+    if not hits:
+        print(f"  · {kind} 표준2 '{old}' 인 행 없음")
+        return []
+    wb.save(path)
+    keys = [k for k, _ in hits]
+    print(f"  ✔ {kind} {old} → {new} {len(keys)}행: {', '.join(keys[:12])}{' …' if len(keys) > 12 else ''}")
+    return hits
+
+
 def apply_sheet() -> int:
     if not SHEET.exists():
         print(f"  {SHEET.name} 없음 — 먼저 실행(또는 mapping.py propose)")
@@ -346,7 +378,18 @@ def main(argv: list[str] | None = None) -> int:
     a_test.add_argument("--cat", "--type1", dest="a", default="")
     a_test.add_argument("--series", "--type2", dest="b", default="")
     a_test.add_argument("--value", "--platform", dest="c", default="")
+    a_ret = sp.add_parser("retire")
+    a_ret.add_argument("kind", choices=kinds)
+    a_ret.add_argument("old")
+    a_ret.add_argument("new")
     a = ap.parse_args(argv)
+    if a.cmd == "retire":
+        kind = a.kind.upper()
+        hits = retire_series(kind, a.old, a.new)
+        for key, cat in hits[:3]:
+            raw = (cat, a.old, key) if kind != "CE" else (key, a.old, "")
+            print(f"  ▷ 미리보기: {' / '.join(raw)}  ⇒  {' / '.join(clean_combos(kind, *[[v] for v in raw])[0])}")
+        return 0 if hits else 1
     if a.cmd == "propose":
         propose()
     elif a.cmd == "apply":

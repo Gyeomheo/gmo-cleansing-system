@@ -204,10 +204,17 @@ def _standardize_values(out: pd.DataFrame, kind: str, notes: list[str]) -> None:
             if n_fix:
                 notes.append(f"{col} Epp · app · web → S.com {n_fix:,}행")
     if "Funding" in out.columns:
-        hq = out["Funding"].astype(str).str.strip().str.upper() == "HQ"
-        out.loc[hq, "Funding"] = "GMO"                 # HQ 예산 = GMO (담당자 2026-10-20)
-        if hq.any():
-            notes.append(f"Funding HQ → GMO {int(hq.sum()):,}행")
+        # Funding 은 Local · GMO 둘뿐(담당자 2026-10-21). HQ · D2C 예산 = GMO, SCIC(법인 이름) = Local
+        v = out["Funding"].astype(str).str.strip().str.upper()
+        for src, dst in (("HQ", "GMO"), ("D2C", "GMO"), ("SCIC", "Local"), ("GMO", "GMO"), ("LOCAL", "Local")):
+            hit = (v == src) & (out["Funding"] != dst)
+            out.loc[hit, "Funding"] = dst
+            if hit.any() and src not in ("GMO", "LOCAL"):
+                notes.append(f"Funding {src} → {dst} {int(hit.sum()):,}행")
+        odd = out.loc[~out["Funding"].isin(["Local", "GMO"]), "Funding"].astype(str).str.strip()
+        if len(odd):
+            notes.append("⚠ Funding Local · GMO 밖: " + " · ".join(f"{k or '빈 값'} {n:,}행"
+                                                              for k, n in odd.value_counts().items()))
     if kind == "CE" and config.COL_BU in out.columns:
         out[config.COL_BU] = out[config.COL_BU].replace({"HA": "DA", "ha": "DA"})   # HA(Home Appliance) = DA
 

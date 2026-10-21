@@ -138,19 +138,25 @@ def apply_sheet() -> int:
     if pick.empty:
         print("  '사용' 칸에 O 이고 Category · Series 를 채운 행이 없습니다.")
         return 0
+    return append_rules(pick)
+
+
+def append_rules(pick: pd.DataFrame) -> int:
+    """규칙표 끝에 행 추가(백업 후). pick 은 COLS 열을 가진 표."""
     old = pd.read_excel(RULES, dtype=str).fillna("") if RULES.exists() else pd.DataFrame(columns=COLS)
     if RULES.exists():
         BACKUP.mkdir(exist_ok=True)
         shutil.copy2(RULES, BACKUP / f"{RULES.stem}_{datetime.now():%Y%m%d_%H%M%S}{RULES.suffix}")
-    new = pd.concat([old, pick[COLS]], ignore_index=True)
+    new = pd.concat([old, pick.reindex(columns=COLS).fillna("")], ignore_index=True)
     with pd.ExcelWriter(RULES, engine="openpyxl") as w:
         new.to_excel(w, index=False, sheet_name="규칙")
         ws = w.sheets["규칙"]
         for col, wd in zip("ABCDEFGHIJKLM", (6, 8, 6, 12, 12, 18, 14, 16, 18, 16, 12, 10, 80)):
             ws.column_dimensions[col].width = wd
         ws.freeze_panes = "A2"
-    for r in pick.itertuples(index=False):
-        print(f"  ✔ {r.법인 or '*'} {r.구분} PR~{r.PR} → {r.Category} / {r.Series}")
+    for r in pick.reindex(columns=COLS).fillna("").itertuples(index=False):
+        cond = " ".join(x for x in (r.PR and f"PR~{r.PR}", r.SB and f"SB~{r.SB}", r.키워드 and f"키워드~{r.키워드}") if x)
+        print(f"  ✔ {r.법인 or '*'} {r.구분} {cond} → {r.Category} / {r.Series}")
     return len(pick)
 
 

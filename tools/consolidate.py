@@ -28,6 +28,7 @@ import numpy as np
 import pandas as pd
 
 from common import REPORT_DIR, config, is_locked
+from map_check import run as map_check
 from src.media_std import PF, T1, T2, load_taxonomy, standardize_media
 from src.pipeline import sanitize_column_headers
 from src.updater import force_numeric_metrics, get_safe_divergence_date
@@ -201,6 +202,10 @@ def validate(raw: pd.DataFrame, out: pd.DataFrame, new: pd.DataFrame, plan: list
                 f"{dmin.date()} ~ {dmax.date()}, 빈 날짜 {bad_date} · 미래 {future} · {config.MIN_DATE} 이전 {early}"))
     blank_sub = (out["Subsidiary"].fillna("").astype(str).str.strip() == "").sum()
     res.append(("경고" if blank_sub else "OK", "법인 빈 값", f"{blank_sub}행"))
+    fund = out["Funding"].fillna("").astype(str).str.strip() if "Funding" in out.columns else pd.Series(dtype=str)
+    odd = fund[~fund.isin(["Local", "GMO"])]
+    res.append(("경고" if len(odd) else "OK", "Funding Local · GMO",
+                " · ".join(f"{k or '빈 값'} {n:,}행" for k, n in odd.value_counts().items()) or "다른 값 없음"))
 
     tax = load_taxonomy(config.MEDIA_TAXONOMY)
     ok = set(zip(tax["t1"], tax["t2"], tax["pf"]))
@@ -420,6 +425,8 @@ def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None =
     checks = validate(raw, out, new, plan)
     week = week or date.today().isocalendar()[1]
     name = new_name(kind, week)
+    _, n_map = map_check(kind, out, raw, label=f"{src.name} → {name}")   # ④⑤⑥ — 경고만
+    checks.append(("경고" if n_map else "OK", "매핑 점검", f"{n_map}건 → Reports/매핑점검_{kind}.md"))
     report = write_report(kind, src, name, plan, checks, media_n, len(out), dup_raw, dup_new)
     print(f"  기준: {src.name}  ({len(raw) + dup_raw['행']:,}행) → 새 {len(out):,}행")
     for label, d in (("기준 RAW", dup_raw), ("이번 결과", dup_new)):

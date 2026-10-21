@@ -91,6 +91,7 @@ flowchart TB
 | 클렌징 | 기존 그대로 (`run.py` → `src/`) + 캠페인 역추적(§4) + 미디어 표준표(§5) | `run.py` |
 | 마스터 갱신 | 법인별로 숫자(Spend · Revenue · Imp · Click · Order)가 **처음 달라진 날**부터 교체. 분류만 바뀌면 `--remap` | `src/updater.py` |
 | 매핑 제안 · 요약 | 원본에서 매핑 키에 없는 값(Spend 큰 순), 실행 직전 마스터와 비교한 법인별 변화 | `tools/mapping.py propose` · `tools/summary.py` |
+| 매핑 점검(경고만, 취합 때) | 기준 = 취합본(진짜 마스터). ④ 출시 주보다 4주 넘게 앞선 신제품 Spend ⑤ 이전 취합본과 숫자까지 같은 행을 짝지어 분류가 바뀐 것 — 전 → 후 분류 · 원본 입력값(이번 cleaned 파일) · 캠페인, 행 단위는 `매핑점검_<구분>_분류바뀜.csv` ⑥ 법인 · 주차별 Multi · Other 비중이 앞 8주보다 15%p↑ · $20K↑(캠페인명 상위 3개 첨부) → `Reports/매핑점검_<구분>.md`, 취합검증에 건수. 따로: `map_check.py CE [--old 이전취합본] [--all-weeks]` | `tools/map_check.py` |
 
 결과: `2_Output/Reports/` — `실행요약.md` · `매핑등록.xlsx`(있을 때만) · `캠페인규칙제안.xlsx` · `취합검증_<구분>.md` · `Tracker_<구분>_W<nn>.html` · `메일_W<nn>.html`.
 
@@ -183,6 +184,9 @@ flowchart TD
 - **원본 우선**: 클렌징 결과의 시리즈나 분류가 빈 값 · Multi · Other(s) 일 때만 채운다. 원본이 구체적인데 규칙과 다르면 바꾸지 않고 `cleaned_*_Summary_Campaign.csv` 에 '충돌(그대로)'로만 남긴다
 - **번들 예외**: 키워드를 `+` 로 묶은 규칙(예: `s26|f1h26 + buds`)과 '원본보다 우선 = O' 규칙은 원본을 교체한다(→ Multi 등)
 - 규칙 열: 사용(O) · 법인(비우면 전체) · 구분(MX/CE) · PR · SB · 키워드(`|` 하나, `+` 모두 — 캠페인명 · Product Series · Products 원본에서 찾음) · 제외 키워드 · Category · Series · Products · 시작일 · 원본보다 우선(O) · 근거
+- 키워드가 `#` 로 시작하면 **코드 단어**: 앞뒤가 글자 · 숫자가 아닐 때만(코드끼리 붙은 `Q8H8B8` 은 됨). `#h8` 은 `f2h26-h8` 에 맞고 `Watch8` 엔 안 맞는다
+- SB 만 있는 규칙도 된다(PR 규칙이 안 맞을 때 마지막으로). ROAS WIKI `ingestion._SB_TO_PRODUCT` 를 GMO 표준값으로 옮김: refrig → Refrigerator/Others, washmach → Washer/Others, aircon → Heating & Cooling/Multi, mon → Monitor/Multi, tv → TV/Others, wearsmart → Wearables/Multi, tab → Tablets/Multi …(규칙표 '근거' 열에 ROAS WIKI)
+- Q8 · H8 · B8(담당자 2026-10-21): 단독이면 Q8 → Z Fold8 Ultra, H8 → Z Fold8, B8 → Z Flip8, B8 + Q8/H8 → Z Fold8 & Z Flip8. 모두 원본 우선
 - 예: f1h26 · gs26se = S26 Series, 2026-07-01 이후 Watch Ultra → Watch9 Series / Watch Ultra2(Watch7 · 8 과 같이 나오면 제외), Watch9 Series 로 들어온 Watch Ultra → Watch Ultra2
 - 택소노미(`CN~…_PR~…_SB~…`)는 SETK · SEAU CE · SEPR 만. SEC · SEDA · SIEL 은 자유 텍스트라 키워드 규칙만 먹는다
 - 실행마다 규칙 없는 코드는 `Reports/캠페인규칙제안.xlsx` 로. O 표시 → **`캠페인규칙등록.cmd`**
@@ -285,6 +289,7 @@ python tools/mapping.py test MX --cat Smartphones --series "S26 Series" --value 
 | `python tools/consolidate.py <CE\|MX> [--apply] [--week nn] [--dash-dir 시험 폴더]` | 취합 검증 · 취합본 만들기 |
 | `python tools/tracker.py <CE\|MX> --week <nn> [--file]` | Tracker 만 다시(기본: 최신 취합본) |
 | `python tools/weekly_mail.py --week <nn> [--copy] [--copy-subject] [--no-open]` | 메일 · 리마인드 |
+| `python tools/mapping.py retire MX "S24 Series" "Other S Series"` | 세대가 밀린 시리즈를 Other 로(그 시리즈 행 전부, 백업 후). 과거 행까지는 다음 실행 `--remap` |
 | `python tools/campaign_rules.py propose / apply` | 캠페인 규칙 제안표 / O 표시한 것 규칙표에 넣기 |
 | `python tools/inputs.py` | 1_Input 현황 |
 | `python run.py` | 예전 방식 그대로(클렌징만) |

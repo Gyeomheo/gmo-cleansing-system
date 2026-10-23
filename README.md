@@ -134,6 +134,7 @@ flowchart LR
 - 검증(오류면 ③ 안 함): 안 바뀐 법인 보존 · 법인별 교체 전후 · 변화 큰 법인(경고) · CPC · 날짜(미래 · 범위) · 법인 빈 값 · 미디어 표준표 밖 · 중복 행
 - 쓰기는 Excel COM: 날짜는 Excel 일련번호 + `yyyy-mm-dd`(datetime 을 넘기면 9시간 당겨짐), 피벗은 **새 캐시 하나를 모든 피벗이 공유**하고 새로고침
 - 저장 후 다시 읽어 **모든 열 · 모든 행** 대조. 이전 취합본은 `old RAW files` 로
+- **분류만 바뀐 과거 행**은 숫자 기준 교체로는 안 바뀐다(클렌징 `--remap` 도 로컬 마스터만). 취합본까지 맞추려면 `consolidate.py <구분> --remap 법인,…` 또는 **예약** `3_Config/취합_remap예약.csv`(구분 · 법인 · 시작일 · 메모) — 그 구분 취합 때 GUI 가 자동으로 쓰고, 입력이 시작일부터 덮었을 때만 예약을 지운다(못 덮으면 ⚠ · 예약 유지)
 
 ## 3. 매핑 자동 추론 (`tools/auto_mapping.py`, run_all 이 클렌징 전에 실행)
 
@@ -296,7 +297,7 @@ python tools/mapping.py test MX --cat Smartphones --series "S26 Series" --value 
 | `python tools/run_all.py --check-only` · `--no-auto` · `--open` | 점검까지만 · 매핑 자동 추론 끄기 · 끝나면 Reports 열기 |
 | `python tools/run_all.py --remap [SEPR,SETK]` | 매핑 변경 반영: 숫자가 같아도 입력 기간 전체를 마스터에 다시 씀 |
 | `python tools/collect.py <nn> <CE\|MX> [--put] [--root]` | 수집만(보기 · 1_Input 에 넣기) |
-| `python tools/consolidate.py <CE\|MX> [--apply] [--week nn] [--dash-dir 시험 폴더]` | 취합 검증 · 취합본 만들기 |
+| `python tools/consolidate.py <CE\|MX> [--apply] [--week nn] [--dash-dir 시험 폴더] [--remap SEDA,SIEL]` | 취합 검증 · 취합본 만들기. `--remap` = 숫자가 같아도 입력 첫 날부터 교체(예약 파일과 합쳐짐) |
 | `python tools/tracker.py <CE\|MX> --week <nn> [--file]` | Tracker 만 다시(기본: 최신 취합본) |
 | `python tools/weekly_mail.py --week <nn> [--copy] [--copy-subject] [--no-open]` | 메일 · 리마인드 |
 | `python tools/mark_done.py <nn> <CE\|MX> [--apply] [--base 백업.csv] [--root 시험 폴더]` | 처리 표시 · 허겸수정 클렌징본(기본은 미리보기) |

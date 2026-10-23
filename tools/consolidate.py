@@ -3,6 +3,13 @@
     python tools/consolidate.py CE              미리보기 + 검증만 (파일 안 만듦)
     python tools/consolidate.py CE --apply      검증 통과 시 새 취합본 생성
     python tools/consolidate.py MX --apply --week 44
+    python tools/consolidate.py CE --apply --remap SEDA,SIEL
+
+--remap <법인,…> (클렌징 --remap 의 취합판): 그 법인은 숫자가 같아도 이번 입력의 첫 날부터 이번 결과로 교체 —
+  매핑 · 미디어 규칙만 바뀌어 과거 행 분류를 다시 맞출 때. 숫자만 보는 보통 교체로는 분류만 다른 행이 안 바뀐다.
+  예약: 3_Config/취합_remap예약.csv (구분 · 법인 · 시작일 · 메모 · 등록일) 에 적어 두면 그 구분 취합 때 자동으로 같이 쓰고,
+  --apply 로 취합본을 만든 뒤 다 고친 줄만 지운다. 이번 입력에 그 법인이 없거나, 입력 첫 날이 시작일보다 늦어
+  그 사이 행을 못 바꿨으면 예약을 남기고 경고한다(그 날짜가 든 원본이 들어오는 회차에 다시).
 
 기준 데이터 = 가장 최근 취합본의 RAW 시트 (로컬 TOTAL_MASTER 가 아니다 — 마스터에는 빠진 달이 있다).
 법인별로 기존 updater 와 같은 방식: 숫자(Spend · Revenue · Imp · Click · Order)가 처음 달라진 날부터
@@ -78,8 +85,9 @@ def _norm(df: pd.DataFrame) -> pd.DataFrame:
     return force_numeric_metrics(d)
 
 
-def merge(raw: pd.DataFrame, new: pd.DataFrame) -> tuple[pd.DataFrame, list[dict]]:
-    """법인별 교체. 원본 행은 값 그대로 쓴다(비교만 정리된 사본으로)."""
+def merge(raw: pd.DataFrame, new: pd.DataFrame, remap: set[str] | None = None) -> tuple[pd.DataFrame, list[dict]]:
+    """법인별 교체. 원본 행은 값 그대로 쓴다(비교만 정리된 사본으로). remap 법인은 이번 입력 첫 날부터."""
+    remap = {r.upper() for r in (remap or set())}
     raw_n, new_n = _norm(raw), _norm(new)
     parts, plan = [], []
     subs = list(dict.fromkeys(new_n["Subsidiary"]))
@@ -88,7 +96,7 @@ def merge(raw: pd.DataFrame, new: pd.DataFrame) -> tuple[pd.DataFrame, list[dict
     for sub in subs:
         s_new = new_n[new_n["Subsidiary"] == sub]
         s_old = raw_n[raw_n["Subsidiary"] == sub]
-        if s_old.empty:
+        if s_old.empty or sub.upper() in remap:
             cutoff = s_new["Date"].min()
         else:
             cutoff = get_safe_divergence_date(s_old.sort_values("Date"), s_new.sort_values("Date"))
@@ -100,7 +108,8 @@ def merge(raw: pd.DataFrame, new: pd.DataFrame) -> tuple[pd.DataFrame, list[dict
                      "RAW 행(교체)": int(replaced.sum()), "새 행": int(new_take.sum()),
                      "Spend 전": float(raw_n.loc[replaced, METRICS[0]].sum()),
                      "Spend 후": float(new_n.loc[new_take, METRICS[0]].sum()),
-                     "새 데이터 마지막 날": s_new["Date"].max().date()})
+                     "새 데이터 마지막 날": s_new["Date"].max().date(),
+                     "remap": sub.upper() in remap})
     out = pd.concat(parts, ignore_index=True, sort=False)
     out = out.reindex(columns=raw.columns)
     out["Date"] = pd.to_datetime(out["Date"], errors="coerce")
@@ -241,7 +250,7 @@ def write_report(kind: str, src: Path, name: str, plan: list[dict], checks: list
           "| 법인 | 교체 시작 | 새 데이터 마지막 날 | RAW 행(교체) | 새 행 | Spend 전 | Spend 후 |",
           "|---|---|---|---:|---:|---:|---:|"]
     for p in plan:
-        md.append(f"| {p['법인']} | {p['교체 시작']} | {p['새 데이터 마지막 날']} | {p['RAW 행(교체)']:,} "
+        md.append(f"| {p['법인']}{' (remap)' if p.get('remap') else ''} | {p['교체 시작']} | {p['새 데이터 마지막 날']} | {p['RAW 행(교체)']:,} "
                   f"| {p['새 행']:,} | "
                   f"{p['Spend 전']:,.0f} | {p['Spend 후']:,.0f} |")
     md += ["", "## 검증", "", "| 결과 | 항목 | 내용 |", "|---|---|---|"]
@@ -399,7 +408,28 @@ def create(src: Path, name: str, header: list[str], out: pd.DataFrame) -> int:
     return 0
 
 
-def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None = None) -> int:
+RESERVE = config.CONFIG_DIR / "취합_remap예약.csv"
+
+
+def reserved(kind: str) -> pd.DataFrame:
+    if not RESERVE.exists():
+        return pd.DataFrame(columns=["구분", "법인", "시작일", "메모", "등록일"])
+    r = pd.read_csv(RESERVE, dtype=str, encoding="utf-8-sig").fillna("")
+    if "시작일" not in r.columns:
+        r["시작일"] = ""
+    return r
+
+
+def clear_reserved(kind: str, subs: set[str]) -> None:
+    r = reserved(kind)
+    done = (r["구분"].str.upper() == kind) & r["법인"].str.upper().isin(subs)
+    if done.any():
+        r[~done].to_csv(RESERVE, index=False, encoding="utf-8-sig")
+        print(f"  · remap 예약 지움: {', '.join(sorted(r.loc[done, '법인']))}")
+
+
+def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None = None,
+        remap: set[str] | None = None) -> int:
     global DASH_DIR, OLD_DIR
     if dash_dir:                                  # 시험용 — 실제 공유 드라이브 대신 사본 폴더
         DASH_DIR, OLD_DIR = Path(dash_dir), Path(dash_dir) / "old RAW files"
@@ -418,7 +448,30 @@ def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None =
     new = new.reindex(columns=raw.columns)
     raw, dup_raw = drop_duplicates(raw)          # 기준 RAW 에 원래 있던 완전 중복
     new, dup_new = drop_duplicates(new)          # 이번 원본 파일에 있던 완전 중복
-    out, plan = merge(raw, new)
+    r = reserved(kind)
+    booked = set(r.loc[r["구분"].str.upper() == kind, "법인"].str.upper())
+    in_new = set(new["Subsidiary"].astype(str).str.strip().str.upper())
+    remap = {x.upper() for x in (remap or set())} | (booked & in_new)
+    if remap:
+        print(f"  · remap(숫자가 같아도 입력 첫 날부터 교체): {', '.join(sorted(remap))}"
+              + (f"  ← 예약 {', '.join(sorted(booked & in_new))}" if booked & in_new else ""))
+    if booked - in_new:
+        print(f"  · remap 예약 중 이번 입력에 없는 법인(다음에 다시): {', '.join(sorted(booked - in_new))}")
+    # 예약의 시작일까지 입력이 덮는지 — 못 덮으면 이번에 고칠 수 있는 만큼만 하고 예약은 남긴다
+    first = new.assign(_s=new["Subsidiary"].astype(str).str.strip().str.upper(),
+                       _d=pd.to_datetime(new["Date"], errors="coerce")).groupby("_s")["_d"].min()
+    done_subs = set()
+    for _, row in r[r["구분"].str.upper() == kind].iterrows():
+        sub = row["법인"].upper()
+        if sub not in in_new:
+            continue
+        need = pd.to_datetime(row["시작일"], errors="coerce")
+        if pd.notna(need) and first[sub] > need:
+            print(f"  ⚠ remap 예약 {sub}: 이번 입력이 {first[sub].date()} 부터라 {need.date()}~{first[sub].date()} 앞 행은 "
+                  f"못 바꿈 — 예약 유지(그 날짜가 든 원본이 들어오는 회차에 다시)")
+        else:
+            done_subs.add(sub)
+    out, plan = merge(raw, new, remap)
     out, media_n = media_pass(out)
     out = recompute_cpc(out)
     out = canonical_case(out, kind)
@@ -434,8 +487,8 @@ def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None =
             print(f"  · 중복 제거({label}): {d['행']:,}행 (숫자 있는 행 {d['숫자 있는 행']:,}, "
                   f"Spend {d['Spend']:,.0f}, Revenue {d['Revenue']:,.0f})  {d['법인별']}")
     for p in plan:
-        print(f"  · {p['법인']:<6} {p['교체 시작']}~ 교체  RAW {p['RAW 행(교체)']:,}행 → 새 {p['새 행']:,}행"
-              f"  Spend {p['Spend 전']:,.0f} → {p['Spend 후']:,.0f}")
+        print(f"  · {p['법인']:<6} {p['교체 시작']}~ 교체{' (remap)' if p.get('remap') else ''}"
+              f"  RAW {p['RAW 행(교체)']:,}행 → 새 {p['새 행']:,}행  Spend {p['Spend 전']:,.0f} → {p['Spend 후']:,.0f}")
     for r, k, v in checks:
         print(f"  {'✔' if r == 'OK' else ('⚠' if r == '경고' else '✖')} {k}: {v}")
     print(f"  검증 보고서: {report}")
@@ -445,7 +498,10 @@ def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None =
     if not apply:
         print(f"  (미리보기 — 만들 파일: {name}.  --apply 로 생성)")
         return 0
-    return create(src, name, header, out)
+    rc = create(src, name, header, out)
+    if rc == 0:
+        clear_reserved(kind, done_subs)
+    return rc
 
 
 if __name__ == "__main__":
@@ -454,5 +510,6 @@ if __name__ == "__main__":
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--week", type=int)
     ap.add_argument("--dash-dir", type=Path, help="시험용 취합 폴더(기본: 공유 드라이브 D2C)")
+    ap.add_argument("--remap", default="", help="숫자가 같아도 입력 첫 날부터 교체할 법인(쉼표). 예약 파일과 합쳐짐")
     a = ap.parse_args()
-    raise SystemExit(run(a.kind, a.apply, a.week, a.dash_dir))
+    raise SystemExit(run(a.kind, a.apply, a.week, a.dash_dir, {x.strip() for x in a.remap.split(",") if x.strip()}))

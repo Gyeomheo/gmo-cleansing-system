@@ -19,6 +19,10 @@ media_std.py
                                      (Performance Max · GDN · Demand Gen → Google)
     대소문자 · 띄어쓰기 · 기호만 다르면 표 표기로 (TikTok → Tiktok, PerformanceMax → Performance Max)
     약어는 3_Config/media_aliases.csv 로 먼저 푼다 (PMAX → Performance Max, FB → Meta …)
+
+원본 값으로 정하는 규칙 (담당자 2026-10-23) — 표 검사보다 먼저, 원본 칸을 보고 _cleaned 를 정한다(원본 칸은 그대로)
+    Type 2 원본이 Smart Shopping        → Shopping Ads / Performance Max (Platform 은 매핑 결과 그대로)
+    Type 1 · Type 2 원본이 둘 다 App    → 캠페인명에 install 이 있으면 App Install, 없으면 App Engagement
 """
 import logging
 import re
@@ -27,6 +31,7 @@ from pathlib import Path
 import pandas as pd
 
 T1, T2, PF = 'Media Type 1_cleaned', 'Media Type 2_cleaned', 'Media Platform_cleaned'
+RAW_T1, RAW_T2, CAMPAIGN = 'Media Type 1', 'Media Type 2', 'Campaign Name'
 
 
 ALIASES: dict = {'Type 2': {}, 'Platform': {}}
@@ -97,11 +102,34 @@ def _decide(a: str, b: str, p: str, t1c: dict, t2c: dict, pfc: dict, defaults: d
     return (a, b, p), '확인(Others 자리 없음)'
 
 
+def _raw_rules(df: pd.DataFrame) -> pd.Series:
+    """원본 값으로 정하는 규칙(위 docstring) — df 의 _cleaned 를 바꾸고, 행마다 사유를 돌려준다."""
+    why = pd.Series('', index=df.index)
+    if RAW_T2 not in df.columns:                       # 마스터 재검사(consolidate · master_media)는 원본 칸이 없다
+        return why
+    t2 = df[RAW_T2].map(_key)
+    smart = t2 == 'smartshopping'
+    df.loc[smart, T1], df.loc[smart, T2] = 'Shopping Ads', 'Performance Max'
+    why[smart] = '원본 규칙: Smart Shopping = Performance Max'
+    if RAW_T1 in df.columns:
+        app = (df[RAW_T1].map(_key) == 'app') & (t2 == 'app')
+        camp = df[CAMPAIGN].fillna('').astype(str).str.lower() if CAMPAIGN in df.columns else pd.Series('', index=df.index)
+        install = camp.str.contains('install', regex=False)
+        df.loc[app, T1] = 'App'
+        df.loc[app & install, T2] = 'App Install'
+        df.loc[app & ~install, T2] = 'App Engagement'
+        why[app & install] = '원본 규칙: App · 캠페인명 install → App Install'
+        why[app & ~install] = '원본 규칙: App · 캠페인명 install 없음 → App Engagement'
+    return why
+
+
 def standardize_media(df: pd.DataFrame, tax: pd.DataFrame):
     """(df, 요약 df). _cleaned 미디어 3열만 바꾼다."""
     df = df.copy()
     if tax.empty or any(c not in df.columns for c in (T1, T2, PF)):
         return df, pd.DataFrame()
+    orig = df[[T1, T2, PF]].fillna('').astype(str)   # 요약의 '전' = 원본 규칙 · 표 검사 전
+    raw_why = _raw_rules(df)
     t1c = _canon(tax['t1'])
     k1, k2 = tax['t1'].map(_key), tax['t2'].map(_key)
     t2c = {a: _canon(tax.loc[k1 == a, 't2']) for a in t1c}
@@ -115,6 +143,8 @@ def standardize_media(df: pd.DataFrame, tax: pd.DataFrame):
     keys = list(zip(before[T1], before[T2], before[PF]))
     after = pd.DataFrame([decided[k][0] for k in keys], index=df.index, columns=[T1, T2, PF])
     why = pd.Series([decided[k][1] for k in keys], index=df.index)
+    why = raw_why.where(why == '', raw_why + ' · ' + why).where(raw_why != '', why)
+    before = orig
     changed = (after != before).any(axis=1)
     df[[T1, T2, PF]] = after
     df['Media_Rule'] = why

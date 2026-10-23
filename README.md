@@ -217,6 +217,8 @@ flowchart TD
 - 표에 없는 Platform → Others(DSP 는 Other DSPs), 표에 없는 Type 2 → Others / Others, Affiliate Platform 은 원본 그대로
 - Type 1 이 표에 없으면 Type 2 로 찾는다(Other / PerformanceMax → Shopping Ads)
 - Platform 이 비었거나 Other 류면 표의 `기본` 열 O 값(YouTube → Google), 없으면 그 Type 2 의 Platform 이 하나뿐일 때 그것(Performance Max · GDN · Demand Gen → Google). 띄어쓰기 · 대소문자 무시
+- **원본 값 규칙**(담당자 2026-10-23, `src/media_std.py` `_raw_rules`, 표 검사 전): 원본 Type 2 `Smart Shopping` → `Shopping Ads / Performance Max`(Platform 은 매핑 결과 — Google · Bing · Others, 표준표에 Bing · Others 추가 · Google 이 기본값), 원본 `App / App` → 캠페인명에 install 이 있으면 `App Install`, 없으면 `App Engagement`. 원본 칸은 그대로
+- 매핑 점수에 1.5(Type 1 만 일치) 단계(2026-10-23) — 모르는 Type 2 가 와도 원본 Type 1 을 지킨다(전엔 Google 이면 Paid Search / Text Ads 로 감)
 - 약어는 `3_Config/media_aliases.csv`(칸 · 별칭 · 정식 이름)로 먼저 푼다 — PMAX → Performance Max, FB · IG → Meta, TTD → The Trade Desk 등
 - 원본 값은 마스터 `Media Platform (Raw)` 에. 마스터 과거 행도 매 실행 같은 검사(`tools/master_media.py`)
 

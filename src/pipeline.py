@@ -117,6 +117,7 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
     #  1. Cat + Ser + Prd 모두 일치 (Perfect Match)  --------> 4
     #  2. Cat + Ser 일치 (Standard Match)            --------> 3
     #  3. Ser 일치 (Partial/Loose Match)             --------> 2
+    #  3-1. Cat 만 일치 (Type 1 유지)                 --------> 1.5  (2026-10-23 담당자 승인)
     #  4. Key는 존재하나 매칭 실패 (Exist)            --------> 1
     #  5. 매핑 테이블에 Key 없음 (Fail)               --------> 0 (Drop)
     #
@@ -146,9 +147,10 @@ def run_cleansing_pipeline(df_raw: pd.DataFrame, df_map: pd.DataFrame, map_cols:
         a_match & b_match & c_match,  # Priority 4
         a_match & b_match,            # Priority 3
         b_match,                      # Priority 2
+        a_match,                      # Priority 1.5 — Cat(Type 1)만 일치: 키만 있는 후보보다 우선
         df_merged[key_col].notna()    # Priority 1
     ]
-    scores = [4, 3, 2, 1] 
+    scores = [4, 3, 2, 1.5, 1]
     df_merged['priority'] = np.select(conditions, scores, default=0)
 
     # 중복 제거 (점수 높은 순 -> 원본 인덱스 순)

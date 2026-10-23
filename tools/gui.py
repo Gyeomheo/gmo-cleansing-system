@@ -66,7 +66,22 @@ class App(tk.Tk):
         try:  # 작업표시줄을 python 대신 앱 아이콘으로
             import ctypes
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Artience.WeeklyReport")
-            self.iconbitmap(default=str(ROOT / "assets" / "icon_weekly_v8.ico"))
+            self.iconbitmap(default=str(ROOT / "assets" / "icon_weekly_v9.ico"))
+        except Exception:
+            pass
+        try:  # 작업표시줄 아이콘은 Tk 가 32px 하나만 넘겨 Windows 가 24px 로 줄이며 뭉갠다 → 화면 배율에 맞는 크기를 직접 지정
+            import ctypes, winreg
+            try:
+                with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop\WindowMetrics") as k:
+                    dpi = winreg.QueryValueEx(k, "AppliedDPI")[0]
+            except OSError:
+                dpi = 96
+            u = ctypes.windll.user32; u.LoadImageW.restype = ctypes.c_void_p
+            self.update_idletasks()
+            hwnd = u.GetParent(self.winfo_id())
+            for which, px in ((1, round(24 * dpi / 96)), (0, round(16 * dpi / 96))):   # ICON_BIG · ICON_SMALL
+                h = u.LoadImageW(None, str(ROOT / "assets" / "icon_weekly_v9.ico"), 1, px, px, 0x10)  # IMAGE_ICON, LR_LOADFROMFILE
+                u.SendMessageW(hwnd, 0x80, which, ctypes.c_void_p(h))                    # WM_SETICON
         except Exception:
             pass
         self.geometry("1280x800")

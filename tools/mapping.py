@@ -15,6 +15,8 @@
     python tools/mapping.py retire MX "S24 Series" "Other S Series"
         세대가 밀리면 그 시리즈(표준2)로 가던 행을 전부 다른 시리즈로(백업 후). 제품명(표준3)은 그대로.
         마스터 · 취합본 과거 행까지 바꾸려면 다음 실행을 --remap 으로
+    python tools/mapping.py fix MX "Buds 3" Hearables "Buds3 Series" Buds3
+        이미 있는 키의 표준 3칸을 고친다(오타 수정, 백업 후). 같은 키가 여러 행이면 --all
 
 원본 값은 MX = Products, CE = Product Category, MEDIA = Media Platform
 (Media Type 1 이 Affiliate 면 Media Type 2).
@@ -336,6 +338,39 @@ def retire_series(kind: str, old: str, new: str) -> list[tuple[str, str]]:
     return hits
 
 
+def fix_rule(kind: str, value: str, std: list[str], every: bool = False) -> int:
+    """이미 있는 키의 표준 3칸을 바꾼다(오타 수정) — 백업 후 서식 그대로.
+    같은 키가 여러 행이면 멈춘다(--all 이면 모두)."""
+    from openpyxl import load_workbook
+
+    path, cols = KINDS[kind]
+    if is_locked(path):
+        print(f"  ✖ {path.name} 이(가) Excel 에서 열려 있음 — 닫고 다시")
+        return 0
+    key = norm_key(value)
+    wb = load_workbook(path)
+    ws = wb.worksheets[0]
+    header = [c.value for c in ws[1]]
+    ki = header.index(cols["key"])
+    si = [header.index(c) for c in cols["std_cols"]]
+    rows = [r for r in ws.iter_rows(min_row=2) if str(r[ki].value or "").strip() == key]
+    if not rows:
+        print(f"  · {kind} 키 '{key}' 없음 — 새로 넣으려면 add")
+        return 0
+    if len(rows) > 1 and not every:
+        print(f"  ✖ {kind} 키 '{key}' 가 {len(rows)}행 — 모두 바꾸려면 --all")
+        return 0
+    BACKUP.mkdir(exist_ok=True)
+    shutil.copy2(path, BACKUP / f"{path.stem}_{datetime.now():%Y%m%d_%H%M%S}{path.suffix}")
+    for r in rows:
+        before = [str(r[i].value or "") for i in si]
+        for i, v in zip(si, std):
+            r[i].value = str(v).strip()
+        print(f"  ✔ {kind} 고침: {key}  {' / '.join(before)}  →  {' / '.join(std)}")
+    wb.save(path)
+    return len(rows)
+
+
 def apply_sheet() -> int:
     if not SHEET.exists():
         print(f"  {SHEET.name} 없음 — 먼저 실행(또는 mapping.py propose)")
@@ -382,7 +417,20 @@ def main(argv: list[str] | None = None) -> int:
     a_ret.add_argument("kind", choices=kinds)
     a_ret.add_argument("old")
     a_ret.add_argument("new")
+    a_fix = sp.add_parser("fix")
+    a_fix.add_argument("kind", choices=kinds)
+    a_fix.add_argument("value")
+    a_fix.add_argument("std", nargs=3)
+    a_fix.add_argument("--all", action="store_true", help="같은 키가 여러 행이면 모두")
     a = ap.parse_args(argv)
+    if a.cmd == "fix":
+        kind = a.kind.upper()
+        if not fix_rule(kind, a.value, a.std, a.all):
+            return 1
+        raw = {"MX": (a.std[0], a.std[1], a.value), "CE": (a.value, a.std[1], ""),
+               "MEDIA": (a.std[0], a.std[1], a.value)}[kind]
+        print(f"  ▷ 미리보기: {' / '.join(raw)}  ⇒  {' / '.join(clean_combos(kind, *[[v] for v in raw])[0])}")
+        return 0
     if a.cmd == "retire":
         kind = a.kind.upper()
         hits = retire_series(kind, a.old, a.new)

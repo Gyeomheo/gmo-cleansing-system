@@ -301,6 +301,7 @@ python tools/mapping.py test MX --cat Smartphones --series "S26 Series" --value 
 | `python tools/weekly_mail.py --week <nn> [--copy] [--copy-subject] [--no-open]` | 메일 · 리마인드 |
 | `python tools/mark_done.py <nn> <CE\|MX> [--apply] [--base 백업.csv] [--root 시험 폴더]` | 처리 표시 · 허겸수정 클렌징본(기본은 미리보기) |
 | `python tools/status_check.py <nn> <CE\|MX> [--apply] [--book 사본.xlsx]` | 백과사전 Status Check 기재(기본은 미리보기) |
+| `python tools/mapping.py fix MX "Buds 3" Hearables "Buds3 Series" Buds3` | 이미 있는 키의 표준 3칸 고치기(오타, 백업 후). 같은 키가 여러 행이면 `--all` |
 | `python tools/mapping.py retire MX "S24 Series" "Other S Series"` | 세대가 밀린 시리즈를 Other 로(그 시리즈 행 전부, 백업 후). 과거 행까지는 다음 실행 `--remap` |
 | `python tools/campaign_rules.py propose / apply` | 캠페인 규칙 제안표 / O 표시한 것 규칙표에 넣기 |
 | `python tools/inputs.py` | 1_Input 현황 |

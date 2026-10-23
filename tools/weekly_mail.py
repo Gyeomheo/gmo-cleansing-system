@@ -10,6 +10,8 @@
   이번 주 구분 Tracker 에서 Note 가 Missing submission 인 법인마다 한 통.
   다른 구분도 미제출이면 구분 없이(담당자 양식 그대로), 한쪽만이면 'MX data' / 'CE data'.
   주차 범위 = RAW 에서 그 법인의 마지막 제출 주 다음 ~ 보고 주차-1.
+  보내기: GAS(tools/gas_mail/Code.gs) 가 그 법인 스레드(reminder_query) 중 가장 최신 것에 전체 회신 —
+          기본은 초안, 스크립트 속성 AUTO_SEND=true 면 바로 발송(같은 주 · 같은 법인 한 번만)
 """
 from __future__ import annotations
 
@@ -108,6 +110,31 @@ def reminder_links() -> dict[str, str]:
     return {m.strip(): u.strip() for m, u in zip(d["Market"], d["링크"]) if m.strip() and u.strip()}
 
 
+def reminder_excluded() -> dict[str, str]:
+    """리마인드 보내지 않을 법인 → 메모 (3_Config/reminder_links.csv '제외' = O). Tracker 표는 그대로."""
+    path = Path(__file__).resolve().parent.parent / "3_Config" / "reminder_links.csv"
+    if not path.exists():
+        return {}
+    d = pd.read_csv(path, dtype=str, encoding="utf-8-sig").fillna("")
+    if "제외" not in d.columns:
+        return {}
+    return {m.strip(): (d.at[i, "메모"] if "메모" in d.columns else "")
+            for i, m in d["Market"].items() if d.at[i, "제외"].strip().upper() == "O"}
+
+
+def reminder_query(sub: str) -> str:
+    """그 법인 스레드를 찾는 Gmail 검색어 — GAS 가 가장 최신 스레드에 전체 회신(받는 사람 · 참조는 스레드 그대로).
+    기본 = 제목에 법인 코드가 든 메일(DCT · PCG 주간 메일 제외, 1년 안). 3_Config/reminder_links.csv '검색어' 칸이 있으면 그것."""
+    path = Path(__file__).resolve().parent.parent / "3_Config" / "reminder_links.csv"
+    if path.exists():
+        d = pd.read_csv(path, dtype=str, encoding="utf-8-sig").fillna("")
+        if "검색어" in d.columns:
+            hit = d.loc[d["Market"].str.strip() == sub, "검색어"].str.strip()
+            if len(hit) and hit.iloc[0]:
+                return hit.iloc[0]
+    return f'subject:"{sub}" -subject:DCT -subject:"GMO Weekly Report" -subject:"GMO D2C" newer_than:365d'
+
+
 def weeks_text(a: int, b: int) -> str:
     return f"Week {a}" if a == b else f"Week {a}~{b}"
 
@@ -171,6 +198,12 @@ def build(week: int) -> Path:
         # 끝 주 = 이번 주-1 (지난 일요일까지), 시작 주 = 그 법인의 마지막 제출 주 + 1
         pend = {this: missing_ranges(this, tabs[this][1], week)}
         subs = list(dict.fromkeys([s_ for k in ("MX", "CE") for s_ in pend.get(k, {})]))
+        skip = reminder_excluded()
+        held = [s_ for s_ in subs if s_ in skip]
+        subs = [s_ for s_ in subs if s_ not in skip]
+        if held:
+            parts.append("<p class=\"meta\">리마인드 보류(reminder_links.csv 제외): "
+                         + html.escape(" · ".join(f"{s_} — {skip[s_]}" if skip[s_] else s_ for s_ in held)) + "</p>")
         if not subs:
             parts.append("<p>미제출 법인 없음</p>")
         for sub in subs:
@@ -178,7 +211,8 @@ def build(week: int) -> Path:
             text = reminder_body(sub, ranges)
             subj = f"[Reminder] {sub} Weekly Report — " + " / ".join(f"{k} {weeks_text(*v)}" for k, v in ranges.items())
             link = reminder_links().get(sub, "")
-            reminders.append({"market": sub, "subject": subj, "text": text, "link": link})
+            reminders.append({"market": sub, "subject": subj, "text": text, "link": link,
+                              "query": reminder_query(sub), "key": f"W{week}-{this}-{sub}"})
             rid = f"r{len(reminders)}"
             open_btn = (f' <a href="{html.escape(link)}" target="_blank"><button>메일 열기</button></a>'
                         if link else "")

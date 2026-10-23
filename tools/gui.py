@@ -171,9 +171,9 @@ class App(tk.Tk):
         self.run_btn = Btn(act, "▶  전체 실행", self.run_all, primary=True)
         self.run_btn.pack(side="left", padx=(12, 10))
         self.btns = [self.run_btn]
-        for t, fn in (("① 수집 · 클렌징", self.step_clean), ("② 검증", self.step_check),
-                      ("③ 취합본", self.step_make), ("④ 메일", self.step_mail)):
-            b = Btn(act, t, lambda fn=fn: self.start([fn]))
+        for t, fns in (("① 수집 · 클렌징", [self.step_clean]), ("② 검증", [self.step_check]),
+                       ("③ 취합본", [self.step_make, self.step_status]), ("④ 메일", [self.step_mail])):
+            b = Btn(act, t, lambda fns=fns: self.start(fns))
             b.pack(side="left", padx=(0, 6))
             self.btns.append(b)
         Btn(act, "제목 복사", self.copy_subject, small=True).pack(side="left", padx=(4, 0))
@@ -384,6 +384,16 @@ class App(tk.Tk):
         return self.call([str(ROOT / "tools" / "consolidate.py"), self.kind.get(), "--apply",
                           "--week", str(self.week())]) == 0
 
+    def step_status(self) -> bool:
+        """국가별 weekly 폴더 처리 표시(_A · XXX · 허겸수정 클렌징본) + 백과사전 STATUS 시트. 실패해도 메일로 넘어간다."""
+        self.status.set("③-2 처리 표시 · STATUS 기재 중… (Excel)")
+        w, k = str(self.week()), self.kind.get()
+        rc1 = self.call([str(ROOT / "tools" / "mark_done.py"), w, k, "--apply"])
+        rc2 = self.call([str(ROOT / "tools" / "status_check.py"), w, k, "--apply"])
+        if rc1 or rc2:
+            self.q.put(("say", "  ✖ 처리 표시 · STATUS 중 실패 — 로그 확인(메일은 계속)\n", "bad"))
+        return True
+
     def step_mail(self) -> bool:
         """주간 메일 본문 → 클립보드 + Gmail 스레드 열기, 리마인드는 HTML 에서 [본문 복사]. 보내기는 직접."""
         self.status.set("④ 메일 만드는 중…")
@@ -402,7 +412,7 @@ class App(tk.Tk):
         self.status.set(f"✔ 제목 복사: {subj}")
 
     def run_all(self) -> None:
-        self.start([self.step_clean, self.step_check, self.step_make, self.step_mail])
+        self.start([self.step_clean, self.step_check, self.step_make, self.step_status, self.step_mail])
 
     def start(self, steps) -> None:
         if self.busy:

@@ -12,7 +12,9 @@
 - 부분 기간 파일이어도 된다 — 마스터는 겹치는 날짜부터만 교체한다(updater)
 - 같은 종류 파일(파일 이름에서 날짜 · 숫자를 뺀 것, 예: 'Monks - HQ - CE - AWIN')은 **최신 폴더 것**을 쓰고,
   최신 파일에 없는 날짜만 이전 폴더 파일에서 채운다. 종류가 다른 파일(AWIN + google_social_display)은 합친다
-- 건너뜀: '복사본' · '~$' 파일, 구분이 다른 파일(CE 폴더 안의 '- MX -' 파일 등)
+- 건너뜀: '복사본' · '~$' 파일, 구분이 다른 파일(CE 폴더 안의 '- MX -' 파일 등).
+  'XXX'(안 쓴 것 — tools/mark_done.py) 는 그대로 읽는다 — 최신 파일에 덮여 어차피 안 쓰이고, 합치는 순서가 표시 전과 같아진다
+- ' - 허겸수정(MMDD~)_a' 파일 = 클렌징 값을 넣은 복사본(mark_done) → 건너뛰고 옆의 원본을 읽는다(표시 전과 같은 결과)
 - 열 정리: Div → BU, 'Products (optional)' 등은 파이프라인이 처리.
   날짜 열 이름이 없으면(SIEL 'Column2') 날짜가 든 열을 Date 로
 - CE 인데 BU 열이 없으면(SETK) 캠페인명 BS~da / BS~vd 로 채운다
@@ -36,6 +38,8 @@ from src.pipeline import sanitize_column_headers
 WEEKLY_ROOT = Path(r"G:\공유 드라이브\Samsung Perform_1\문서-1\2026\09. GMO Report\2. 국가별 weekly")
 STAGE = config.OUTPUT_DIR / "_수집"
 SKIP_NAME = ("복사본", "~$")
+MARK_DONE = re.compile(r"\s*-?\s*\(?허겸수정\s*\(?\s*\d{4}~?\s*\)?\s*_[aA]$")   # 처리 표시(mark_done)
+MARK_SKIP = re.compile(r"(^|[\s_\-])XXX($|[\s_\-.])")                          # 안 쓴 것 표시
 
 
 @dataclass
@@ -47,6 +51,14 @@ class Source:
     label: str           # 보여 줄 이름(zip 안이면 zip/파일)
     stream: str          # 같은 종류 판별 키
     sheet: str = ""      # 고른 시트
+    origin: Path | None = None   # 폴더 안의 실제 파일(zip 안이면 그 zip)
+    taken: tuple[str, str] | None = None   # merge_sub 가 이 파일에서 쓴 기간(첫 날, 마지막 날)
+    taken_idx: list | None = None          # 쓴 행(read_source 표의 행 번호 = 머리줄 아래 몇 번째 줄)
+    part_no: int = -1                      # 합친 표에서 몇 번째 조각인지
+
+
+def _skip(name: str) -> bool:
+    return any(k in name for k in SKIP_NAME) or bool(MARK_DONE.search(Path(name).stem))
 
 
 def _stream(name: str) -> str:
@@ -74,22 +86,24 @@ def list_sources(week: int, kind: str, tmp: Path, root: Path | None = None) -> l
         sub, order = m.group(1).upper(), (m.group(2) or "0000").zfill(4)
         seen = set()
         for f in sorted(folder.rglob("*")):
-            if f.suffix.lower() in (".xlsx", ".xlsm") and not any(k in f.name for k in SKIP_NAME):
+            if f.suffix.lower() in (".xlsx", ".xlsm") and not _skip(f.name):
                 if _kind_ok(f.name, kind) and f.name not in seen:
                     seen.add(f.name)
-                    out.append(Source(sub, folder.name, order, f, str(f.relative_to(folder)), _stream(f.name)))
+                    out.append(Source(sub, folder.name, order, f, str(f.relative_to(folder)), _stream(f.name),
+                                      origin=f))
             elif f.suffix.lower() == ".zip":
                 dest = tmp / folder.name / f.stem
                 with zipfile.ZipFile(f) as z:
                     for info in z.infolist():
                         n = Path(info.filename).name
-                        if (n.lower().endswith((".xlsx", ".xlsm")) and not any(k in n for k in SKIP_NAME)
+                        if (n.lower().endswith((".xlsx", ".xlsm")) and not _skip(n)
                                 and _kind_ok(n, kind) and n not in seen):
                             seen.add(n)
                             target = dest / n
                             target.parent.mkdir(parents=True, exist_ok=True)
                             target.write_bytes(z.read(info))
-                            out.append(Source(sub, folder.name, order, target, f"{f.name}/{n}", _stream(n)))
+                            out.append(Source(sub, folder.name, order, target, f"{f.name}/{n}", _stream(n),
+                                              origin=f))
     return out
 
 
@@ -232,6 +246,8 @@ def merge_sub(items: list[tuple[Source, pd.DataFrame]], kind: str) -> tuple[pd.D
             take = df[~df["Date"].isin(covered)]
             if len(take):
                 parts.append(take)
+                src.taken = (take["Date"].min(), take["Date"].max())
+                src.taken_idx, src.part_no = take.index.tolist(), len(parts) - 1
                 notes.append(f"{src.folder}/{src.label} [{src.sheet}]: {len(take):,}행 "
                              f"{take['Date'].min()}~{take['Date'].max()}")
             elif len(df):

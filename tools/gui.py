@@ -388,16 +388,23 @@ class App(tk.Tk):
         f = latest_file(self.kind.get())
         m = NAME_RE.match(f.name) if f else None
         nl = chr(10)
-        if m and int(m.group(2)) == self.week() and not messagebox.askyesno(
+        extra = []
+        if m and int(m.group(2)) == self.week():
+            v = int(m.group(3))
+            ans = messagebox.askyesnocancel(
                 "확인", f"W{self.week()} {self.kind.get()} 취합본이 이미 있습니다:{nl}{f.name}{nl}{nl}"
-                        f"새 버전(v{int(m.group(3)) + 1})을 만들까요?"):
-            self.q.put(("say", f"  · 취합본 만들기 건너뜀(이미 있음){nl}", "dim"))
-            return True                               # 건너뛰고 ④ 메일로
+                        f"예 — v{v} 에 덮어쓰기(지금 파일은 2_Output/Backup 으로, 직전 주차 취합본 기준으로 다시){nl}"
+                        f"아니오 — 새 버전 v{v + 1}{nl}취소 — 건너뛰기")
+            if ans is None:
+                self.q.put(("say", f"  · 취합본 만들기 건너뜀(이미 있음){nl}", "dim"))
+                return True                           # 건너뛰고 ④ 메일로
+            if ans:
+                extra = ["--overwrite"]
         if not self.check_ok and not messagebox.askyesno("확인", "② 검증을 통과하지 않았습니다. 그래도 만들까요?"):
             return False
         self.status.set("③ 취합본 만드는 중… (Excel 1~2분)")
         return self.call([str(ROOT / "tools" / "consolidate.py"), self.kind.get(), "--apply",
-                          "--week", str(self.week())]) == 0
+                          "--week", str(self.week())] + extra) == 0
 
     def step_status(self) -> bool:
         """국가별 weekly 폴더 처리 표시(_A · XXX · 허겸수정 클렌징본) + 백과사전 STATUS 시트. 실패해도 메일로 넘어간다."""

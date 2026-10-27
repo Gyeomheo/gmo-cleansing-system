@@ -21,6 +21,11 @@
      · 피벗(KPI · pacing · status …) 원본 범위를 새 행 수로 바꾸고 새로고침 → 저장
   3. 이전 최신 파일은 D2C 폴더에서 'old RAW files' 로 (1 의 복사본이 있으므로 덮어쓰지 않고 건너뜀)
 검증 결과는 2_Output/Reports/취합검증_<MX|CE>.md — 오류가 하나라도 있으면 파일을 만들지 않는다.
+
+--overwrite (같은 주차 취합본이 이미 있을 때 새 버전 대신 그 버전으로 다시 — 담당자 2026-10-27)
+  지금 W<nn>_v<k> 를 2_Output/Backup/덮어쓰기전_<시각>_<이름> 으로 빼 두고, 'old RAW files' 의 직전 주차 취합본을
+  기준으로 같은 v<k> 를 다시 만든다(같은 주차 파일을 기준으로 하면 숫자가 같은 행이 안 바뀌어 고친 분류가 안 들어간다).
+  만들다 실패하면 빼 둔 파일을 제자리로 돌린다.
 """
 from __future__ import annotations
 
@@ -428,8 +433,45 @@ def clear_reserved(kind: str, subs: set[str]) -> None:
         print(f"  · remap 예약 지움: {', '.join(sorted(r.loc[done, '법인']))}")
 
 
+def previous_file(kind: str, week: int) -> Path | None:
+    """'old RAW files' 에서 그 주차보다 앞선 가장 최근 취합본."""
+    best = None
+    for f in OLD_DIR.glob("*.xlsx"):
+        m = NAME_RE.match(f.name)
+        if m and m.group(4) == kind and int(m.group(2)) < week:
+            key = (int(m.group(2)), int(m.group(3)))
+            if best is None or key > best[0]:
+                best = (key, f)
+    return best[1] if best else None
+
+
+def overwrite_create(current: Path, base: Path, name: str, header: list[str], out: pd.DataFrame) -> int:
+    """같은 주차 취합본을 같은 버전으로 다시 — current 를 백업으로 빼고, 직전 주차 base 를 D2C 에 복사해 기준으로 만든다."""
+    backup = config.BACKUP_DIR / f"덮어쓰기전_{datetime.now():%Y%m%d_%H%M%S}_{current.name}"
+    config.BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(current, backup)
+    if backup.stat().st_size != current.stat().st_size:
+        print(f"  ✖ 백업 크기가 달라 덮어쓰지 않음: {backup}")
+        return 1
+    current.unlink()
+    print(f"  · 덮어쓰기: 지금 {current.name} → {backup}")
+    tmp = DASH_DIR / base.name                       # create 가 끝나면 D2C 에서 지운다(원본은 old RAW files 에 그대로)
+    shutil.copy2(base, tmp)
+    rc = None
+    try:
+        rc = create(tmp, name, header, out)
+    finally:
+        if rc != 0:                                  # 실패 — 빼 둔 파일을 제자리로
+            if tmp.exists():
+                tmp.unlink()
+            if not current.exists():
+                shutil.copy2(backup, current)
+            print(f"  ✖ 덮어쓰기 실패 — {current.name} 을 제자리로 돌림")
+    return rc
+
+
 def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None = None,
-        remap: set[str] | None = None) -> int:
+        remap: set[str] | None = None, overwrite: bool = False) -> int:
     global DASH_DIR, OLD_DIR
     if dash_dir:                                  # 시험용 — 실제 공유 드라이브 대신 사본 폴더
         DASH_DIR, OLD_DIR = Path(dash_dir), Path(dash_dir) / "old RAW files"
@@ -440,6 +482,19 @@ def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None =
     if src is None:
         print(f"  ✖ {DASH_DIR} 에 {kind} 취합본 없음")
         return 1
+    week = week or date.today().isocalendar()[1]
+    current = None                                # 덮어쓸 같은 주차 파일
+    if overwrite:
+        m = NAME_RE.match(src.name)
+        if int(m.group(2)) == week:
+            base = previous_file(kind, week)
+            if base is None:
+                print(f"  ✖ 덮어쓰기: old RAW files 에 W{week} 보다 앞선 {kind} 취합본 없음")
+                return 1
+            current, src = src, base
+            print(f"  · 덮어쓰기 모드: {current.name} 을 같은 버전으로 다시 — 기준 {base.name}")
+        else:
+            print(f"  · 덮어쓰기: W{week} 취합본이 아직 없어 보통대로 새로 만듦")
     if not new_path.exists():
         print(f"  ✖ 이번 실행 결과 없음({new_path.name}) — 먼저 클렌징을 돌릴 것")
         return 1
@@ -476,8 +531,9 @@ def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None =
     out = recompute_cpc(out)
     out = canonical_case(out, kind)
     checks = validate(raw, out, new, plan)
-    week = week or date.today().isocalendar()[1]
     name = new_name(kind, week)
+    if current is not None:                       # 같은 버전 번호로
+        name = f"{date.today():%y%m%d}_Samsung D2C (2026) - W{week}_v{NAME_RE.match(current.name).group(3)}_GMO_{kind}_RAW File.xlsx"
     _, n_map = map_check(kind, out, raw, label=f"{src.name} → {name}")   # ④⑤⑥ — 경고만
     checks.append(("경고" if n_map else "OK", "매핑 점검", f"{n_map}건 → Reports/매핑점검_{kind}.md"))
     report = write_report(kind, src, name, plan, checks, media_n, len(out), dup_raw, dup_new)
@@ -498,7 +554,7 @@ def run(kind: str, apply: bool, week: int | None = None, dash_dir: Path | None =
     if not apply:
         print(f"  (미리보기 — 만들 파일: {name}.  --apply 로 생성)")
         return 0
-    rc = create(src, name, header, out)
+    rc = overwrite_create(current, src, name, header, out) if current is not None else create(src, name, header, out)
     if rc == 0:
         clear_reserved(kind, done_subs)
     return rc
@@ -511,5 +567,7 @@ if __name__ == "__main__":
     ap.add_argument("--week", type=int)
     ap.add_argument("--dash-dir", type=Path, help="시험용 취합 폴더(기본: 공유 드라이브 D2C)")
     ap.add_argument("--remap", default="", help="숫자가 같아도 입력 첫 날부터 교체할 법인(쉼표). 예약 파일과 합쳐짐")
+    ap.add_argument("--overwrite", action="store_true", help="같은 주차 취합본이 있으면 새 버전 대신 그 버전으로 다시")
     a = ap.parse_args()
-    raise SystemExit(run(a.kind, a.apply, a.week, a.dash_dir, {x.strip() for x in a.remap.split(",") if x.strip()}))
+    raise SystemExit(run(a.kind, a.apply, a.week, a.dash_dir, {x.strip() for x in a.remap.split(",") if x.strip()},
+                         a.overwrite))

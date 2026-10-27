@@ -52,7 +52,7 @@ flowchart LR
 |---|---|---|
 | ① 수집 · 클렌징 | 국가별 weekly `<nn>주차\<MX\|CE>\<법인 MMDD>` 에서 원본 수집 → 1_Input → 클렌징 · 마스터 갱신 | `run_all.py --root <주차 폴더>` |
 | ② 취합 검증 | 최신 취합본 RAW + 이번 실행 결과를 합쳐 보고 `Reports/취합검증_<구분>.md` | `consolidate.py <CE\|MX>` |
-| ③ 취합본 만들기 | 이전 취합본 → `old RAW files`, 새 `<YYMMDD>_Samsung D2C (2026) - W<nn>_v1_GMO_<구분>_RAW File.xlsx` + Tracker. ② 에 오류가 있으면 안 함. 같은 주차 파일이 있으면 새 버전을 만들지 먼저 묻는다 | `consolidate.py <CE\|MX> --apply` |
+| ③ 취합본 만들기 | 이전 취합본 → `old RAW files`, 새 `<YYMMDD>_Samsung D2C (2026) - W<nn>_v1_GMO_<구분>_RAW File.xlsx` + Tracker. ② 에 오류가 있으면 안 함. 같은 주차 파일이 있으면 먼저 묻는다 — 예 = 같은 버전에 덮어쓰기(`--overwrite`), 아니오 = 새 버전, 취소 = 건너뛰기 | `consolidate.py <CE\|MX> --apply` |
 | ④ 메일 | 주간 메일 본문을 클립보드에 넣고 지난주 보낸 메일을 연다 · 리마인드 HTML | `weekly_mail.py --week <nn> --copy` |
 
 - 왼쪽: **이번 주 원본**(법인별 ● 있음 ○ 없음 – 제출 안 함) · **작업 순서**(파일을 보고 자동 체크, '← 지금')
@@ -299,7 +299,7 @@ python tools/mapping.py test MX --cat Smartphones --series "S26 Series" --value 
 | `python tools/run_all.py --check-only` · `--no-auto` · `--open` | 점검까지만 · 매핑 자동 추론 끄기 · 끝나면 Reports 열기 |
 | `python tools/run_all.py --remap [SEPR,SETK]` | 매핑 변경 반영: 숫자가 같아도 입력 기간 전체를 마스터에 다시 씀 |
 | `python tools/collect.py <nn> <CE\|MX> [--put] [--root]` | 수집만(보기 · 1_Input 에 넣기) |
-| `python tools/consolidate.py <CE\|MX> [--apply] [--week nn] [--dash-dir 시험 폴더] [--remap SEDA,SIEL]` | 취합 검증 · 취합본 만들기. `--remap` = 숫자가 같아도 입력 첫 날부터 교체(예약 파일과 합쳐짐) |
+| `python tools/consolidate.py <CE\|MX> [--apply] [--week nn] [--dash-dir 시험 폴더] [--remap SEDA,SIEL]` | 취합 검증 · 취합본 만들기. `--remap` = 숫자가 같아도 입력 첫 날부터 교체(예약 파일과 합쳐짐). `--overwrite` = 같은 주차 취합본이 있으면 그 버전으로 다시(지금 파일은 `2_Output/Backup/덮어쓰기전_…`, 기준은 old RAW files 의 직전 주차 취합본, 실패 시 제자리로) |
 | `python tools/tracker.py <CE\|MX> --week <nn> [--file]` | Tracker 만 다시(기본: 최신 취합본) |
 | `python tools/weekly_mail.py --week <nn> [--copy] [--copy-subject] [--no-open]` | 메일 · 리마인드 |
 | `python tools/mark_done.py <nn> <CE\|MX> [--apply] [--base 백업.csv] [--root 시험 폴더]` | 처리 표시 · 허겸수정 클렌징본(기본은 미리보기) |

@@ -12,6 +12,8 @@
   주차 범위 = RAW 에서 그 법인의 마지막 제출 주 다음 ~ 보고 주차-1.
   보내기: GAS(tools/gas_mail/Code.gs) 가 그 법인 스레드(reminder_query) 중 가장 최신 것에 전체 회신 —
           기본은 초안, 스크립트 속성 AUTO_SEND=true 면 바로 발송(같은 주 · 같은 법인 한 번만)
+미디어 플랜 점검 메일 (2_Output/Reports/미디어플랜점검.xlsx 가 있으면 — tools/media_plan_check.py)
+  '실적 없음' 시트의 법인마다 한 통(계획 매체 · 분기 · 요청 — ATB 대비 변경으로 미집행이면 사유)
 """
 from __future__ import annotations
 
@@ -122,6 +124,17 @@ def reminder_excluded() -> dict[str, str]:
             for i, m in d["Market"].items() if d.at[i, "제외"].strip().upper() == "O"}
 
 
+def reminder_korean() -> dict[str, str]:
+    """한국어로 리마인드할 법인 → 호칭 (3_Config/reminder_links.csv '한국어 호칭', 예: SEC → 이우주 프로님)."""
+    path = Path(__file__).resolve().parent.parent / "3_Config" / "reminder_links.csv"
+    if not path.exists():
+        return {}
+    d = pd.read_csv(path, dtype=str, encoding="utf-8-sig").fillna("")
+    if "한국어 호칭" not in d.columns:
+        return {}
+    return {m.strip(): n.strip() for m, n in zip(d["Market"], d["한국어 호칭"]) if m.strip() and n.strip()}
+
+
 def reminder_query(sub: str) -> str:
     """그 법인 스레드를 찾는 Gmail 검색어 — GAS 가 가장 최신 스레드에 전체 회신(받는 사람 · 참조는 스레드 그대로).
     기본 = 제목에 법인 코드가 든 메일(DCT · PCG 주간 메일 제외, 1년 안). 3_Config/reminder_links.csv '검색어' 칸이 있으면 그것."""
@@ -139,22 +152,102 @@ def weeks_text(a: int, b: int) -> str:
     return f"Week {a}" if a == b else f"Week {a}~{b}"
 
 
-def reminder_body(sub: str, ranges: dict[str, tuple[int, int]]) -> str:
-    """담당자 양식(2026-10-20): 구분별 Status 줄. ranges = {'MX': (a, b), 'CE': (a, b)} 중 미제출인 것."""
+def reminder_body(sub: str, ranges: dict[str, tuple[int, int]], ko_name: str = "") -> str:
+    """담당자 양식(2026-10-20): 구분별 Status 줄. ranges = {'MX': (a, b), 'CE': (a, b)} 중 미제출인 것.
+    ko_name 이 있으면 같은 내용을 한국어로(SEC — 담당자 2026-10-27)."""
     kinds = ", ".join(ranges)                                   # 'MX, CE' / 'CE'
     lo, hi = min(v[0] for v in ranges.values()), max(v[1] for v in ranges.values())
-    status = chr(10).join(f"{k} : [{weeks_text(*v)}] currently pending" for k, v in ranges.items())
-    return f"""Dear {sub} Team,
-I would like to kindly remind you that the {kinds} data for {weeks_text(lo, hi)} has not been received.
-Please ensure that the reports are submitted according to the following requirements:
+    if ko_name:
+        status = chr(10).join(f" - {k} : {weeks_text(*v)} 미수신" for k, v in ranges.items())
+        return f"""안녕하세요 {ko_name},
+아티언스 허겸입니다.
 
-Submission Requirement:
-Frequency: Weekly
-Data Range: Up to the preceding Sunday
-Status:
+GMO Weekly Report 취합과 관련하여, 현재 {kinds} {weeks_text(lo, hi)} 데이터가 아직 확인되지 않아 요청드리고자 메일 드립니다.
+
+번거로우시겠지만 아래 기준에 맞추어 리포트를 공유해 주시면 감사하겠습니다.
+
+■ 제출 기준
+ - 공유 일정: 매주 화요일 EOD
+ - 데이터 기준: 제출일 기준, 그 전주 일요일까지의 데이터
+
+■ 현황
 {status}
 
-Please share the missing files at your earliest convenience to avoid any further gaps.
+감사합니다.
+허겸 드림"""
+    status = chr(10).join(f" - {k} : {weeks_text(*v)} pending" for k, v in ranges.items())
+    return f"""Dear {sub} Team,
+This is Gyeom Heo from Artience.
+
+I would like to kindly remind you that the {kinds} data for {weeks_text(lo, hi)} has not been received yet.
+We would appreciate it if you could share the report according to the requirements below.
+
+■ Submission Requirement
+ - Submission Schedule: Every Tuesday EOD
+ - Data Cutoff: Data up to the Sunday prior to the submission date
+
+■ Status
+{status}
+
+Best regards,
+Gyeom"""
+
+
+def _quarters_text(g: pd.DataFrame) -> str:
+    """분기 단위 결과 행들 → '2Q, 3Q'."""
+    return ", ".join(sorted(set(g["Q"])))
+
+
+def media_plan_gaps() -> pd.DataFrame:
+    path = REPORT_DIR / "미디어플랜점검.xlsx"
+    if not path.exists():
+        return pd.DataFrame()
+    return pd.read_excel(path, sheet_name="실적 없음").fillna("")
+
+
+def media_plan_body(sub: str, g: pd.DataFrame, ko_name: str = "") -> str:
+    """법인 하나의 '계획 있는데 Weekly Raw 실적 없는 매체' 안내 — 리마인드와 같은 양식(■ 소제목)."""
+    items = []
+    for t1, gg in g.groupby("Media Type 1", sort=False):
+        pf = sorted({p.strip() for s in gg["플랜 Platform"] for p in str(s).split(",")
+                     if p.strip() and p.strip().lower() != "other"})
+        items.append(f" - {t1} : {_quarters_text(gg)}" + (f" (Plan: {', '.join(pf)})" if pf else ""))
+    listing = chr(10).join(items)
+    if ko_name:
+        return f"""안녕하세요 {ko_name},
+아티언스 허겸입니다.
+
+2026 미디어 플랜 기준 Weekly Raw 실적 점검 결과 공유드립니다.
+
+■ 기준
+ - 미디어 플랜 기준 월별 계획이 있는 미디어는 Weekly Raw 실적이 있어야 합니다.
+
+■ 실적 미확인 매체 (Weekly Raw)
+{listing}
+
+■ 요청 사항
+ - 다음 Weekly Report 제출 시(매주 화요일 EOD) 위 매체 실적 포함 부탁드립니다.
+ - ATB 대비 변경되어 집행 이력이 없는 경우, 확인 후 사유 공유 부탁드립니다.
+ - 다른 Media Type 으로 넣고 계신 경우에도 회신 주시면 감사하겠습니다.
+
+감사합니다.
+허겸 드림"""
+    return f"""Dear {sub} Team,
+This is Gyeom Heo from Artience.
+
+We are sharing the result of the 2026 Media Plan status check against the Weekly Raw data.
+
+■ Requirement
+ - Media with a monthly plan in the Media Plan must have actuals in the Weekly Raw data.
+
+■ Missing Media (Weekly Raw)
+{listing}
+
+■ Request
+ - Please include the above media in the next Weekly Report submission (Every Tuesday EOD).
+ - If the media was not executed due to a change from the ATB, please confirm and let us know the reason.
+ - If the media is reported under a different Media Type, please let us know as well.
+
 Best regards,
 Gyeom"""
 
@@ -208,7 +301,7 @@ def build(week: int) -> Path:
             parts.append("<p>미제출 법인 없음</p>")
         for sub in subs:
             ranges = {k: pend[k][sub] for k in ("MX", "CE") if sub in pend.get(k, {})}
-            text = reminder_body(sub, ranges)
+            text = reminder_body(sub, ranges, reminder_korean().get(sub, ""))
             subj = f"[Reminder] {sub} Weekly Report — " + " / ".join(f"{k} {weeks_text(*v)}" for k, v in ranges.items())
             link = reminder_links().get(sub, "")
             reminders.append({"market": sub, "subject": subj, "text": text, "link": link,
@@ -219,6 +312,28 @@ def build(week: int) -> Path:
             parts.append(f'<p class="meta">{html.escape(sub)} — 제목: <b>{html.escape(subj)}</b> '
                          f'<button onclick="cp(&quot;{rid}&quot;)">본문 복사</button>{open_btn}</p>'
                          f'<div class="box" id="{rid}" style="white-space:pre-wrap">{html.escape(text)}</div>')
+    # ---- 미디어 플랜 점검 (tools/media_plan_check.py 결과가 있을 때)
+    gaps = media_plan_gaps()
+    if len(gaps):
+        src = REPORT_DIR / "미디어플랜점검.xlsx"
+        from datetime import datetime
+        parts.append("<h2>③ 미디어 플랜 점검 — 계획 있는데 Weekly Raw 실적 없는 매체</h2>")
+        parts.append(f'<p class="meta">기준: {html.escape(src.name)} '
+                     f'({datetime.fromtimestamp(src.stat().st_mtime):%Y-%m-%d %H:%M}) — '
+                     "다시 점검하려면 python tools/media_plan_check.py</p>")
+        skip = reminder_excluded()
+        for n, (sub, g) in enumerate(gaps.groupby("법인", sort=False), 1):
+            if sub in skip:
+                parts.append(f'<p class="meta">{html.escape(sub)} — 리마인드 보류 법인이라 건너뜀</p>')
+                continue
+            text = media_plan_body(sub, g, reminder_korean().get(sub, ""))
+            subj = f"[Media Plan Check] {sub} — Missing media in Weekly Raw"
+            link = reminder_links().get(sub, "")
+            open_btn = (f' <a href="{html.escape(link)}" target="_blank"><button>메일 열기</button></a>'
+                        if link else "")
+            parts.append(f'<p class="meta">{html.escape(sub)} — 제목: <b>{html.escape(subj)}</b> '
+                         f'<button onclick="cp(&quot;p{n}&quot;)">본문 복사</button>{open_btn}</p>'
+                         f'<div class="box" id="p{n}" style="white-space:pre-wrap">{html.escape(text)}</div>')
     parts.append("<script>function cp(id){var r=document.createRange();"
                  "r.selectNodeContents(document.getElementById(id));var s=getSelection();s.removeAllRanges();"
                  "s.addRange(r);document.execCommand('copy');s.removeAllRanges();}"

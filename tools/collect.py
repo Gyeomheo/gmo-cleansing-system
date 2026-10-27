@@ -123,14 +123,21 @@ def read_source(src: Source) -> tuple[pd.DataFrame, str]:
         try:
             head = book.load_sheet(name, header_row=None, n_rows=20).to_pandas()
         except Exception:
-            continue
+            try:                                  # 수식 오류 칸 — 아래 본문 읽기와 같은 이유
+                head = book.load_sheet(name, header_row=None, n_rows=20, dtypes="string").to_pandas()
+            except Exception:
+                continue
         h = _header_row(head)
         if h is None:
             continue
         try:
             df = book.load_sheet(name, header_row=h).to_pandas()
         except Exception:
-            continue
+            # 수식 오류 칸(#NAME? 등)이 있으면 형 추론이 실패한다 — 글자로 다시 읽는다(SEPR W41 · W42, 2026-10-27)
+            try:
+                df = book.load_sheet(name, header_row=h, dtypes="string").to_pandas()
+            except Exception:
+                continue
         df = _clean(df)
         if df.empty:
             continue

@@ -23,6 +23,9 @@ media_std.py
 원본 값으로 정하는 규칙 (담당자 2026-10-23) — 표 검사보다 먼저, 원본 칸을 보고 _cleaned 를 정한다(원본 칸은 그대로)
     Type 2 원본이 Smart Shopping        → Shopping Ads / Performance Max (Platform 은 매핑 결과 그대로)
     Type 1 · Type 2 원본이 둘 다 App    → 캠페인명에 install 이 있으면 App Install, 없으면 App Engagement
+    SEDA: Platform 이 Others · 빈 값인데 'Media Platform_RAW (optional)' 에 값이 있으면 그 값 (담당자 2026-10-27)
+                                     → 이어지는 표 검사로 표에 있는 조합(Paid Social · Standard Ads · Meta / Tiktok 등)만 남고
+                                       표 밖(App · Tiktok, Jampp …)은 다시 Others
 """
 import logging
 import re
@@ -32,6 +35,8 @@ import pandas as pd
 
 T1, T2, PF = 'Media Type 1_cleaned', 'Media Type 2_cleaned', 'Media Platform_cleaned'
 RAW_T1, RAW_T2, CAMPAIGN = 'Media Type 1', 'Media Type 2', 'Campaign Name'
+RAW_PF_OPT, SUB = 'Media Platform_RAW (optional)', 'Subsidiary'
+PF_FROM_RAW_SUBS = {'SEDA'}     # Platform 이 Others 인데 'Media Platform_RAW (optional)' 에 Meta · Tiktok 등이 있는 법인
 
 
 ALIASES: dict = {'Type 2': {}, 'Platform': {}}
@@ -120,6 +125,13 @@ def _raw_rules(df: pd.DataFrame) -> pd.Series:
         df.loc[app & ~install, T2] = 'App Engagement'
         why[app & install] = '원본 규칙: App · 캠페인명 install → App Install'
         why[app & ~install] = '원본 규칙: App · 캠페인명 install 없음 → App Engagement'
+    if RAW_PF_OPT in df.columns and SUB in df.columns:
+        # SEDA: Platform 이 Others 면 Platform_RAW 값으로 — 표 검사가 이어서 보므로 표에 있는 조합만 남고 나머지는 다시 Others
+        raw_pf = df[RAW_PF_OPT].fillna('').astype(str).str.strip()
+        hit = (df[SUB].fillna('').astype(str).str.strip().str.upper().isin(PF_FROM_RAW_SUBS)
+               & df[PF].map(_key).isin(GENERIC_PF) & (raw_pf.map(_key) != '') & ~raw_pf.map(_key).isin(GENERIC_PF))
+        df.loc[hit, PF] = raw_pf[hit]
+        why[hit] = why[hit].where(why[hit] == '', why[hit] + ' · ') + '원본 규칙: Platform ← Platform_RAW(SEDA)'
     return why
 
 

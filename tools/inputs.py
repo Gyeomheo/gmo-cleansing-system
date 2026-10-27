@@ -17,8 +17,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from common import (ARCHIVE_DIR, InputInfo, config, current_slots, fmt_money,
-                    inspect_csv, master_max_dates)
+from common import (ARCHIVE_DIR, InputInfo, _read, config, current_slots, fmt_money,
+                    inspect_csv, master_max_dates, sanitize_column_headers)
 
 DOWNLOADS = Path.home() / "Downloads"
 
@@ -52,12 +52,16 @@ def status() -> list[str]:
         elif len(items) > 1:
             names = ", ".join(i.path.name for i in items)
             problems.append(f"{slot} 슬롯 중복: {names} — 하나만 남길 것")
+        elif items[0].kind == "MX" and any("BU 열이 MX 뿐" in w for w in items[0].warnings):
+            problems.append(f"{items[0].path.name}: MX 인데 BU 열이 있어 CE 로 클렌징됨 — "
+                            f"inputs.py 로 다시 넣을 것(BU 열을 뺌)")
     return problems
 
 
 def target_name(info: InputInfo, slots: dict[str, list[InputInfo]]) -> str:
     existing = slots.get(info.slot)
-    if existing:
+    # 이름이 구분과 맞을 때만 그대로 쓴다(BU=MX 때문에 SEDA_CE.csv 로 들어간 MX 파일은 SEDA.csv 로)
+    if existing and existing[0].path.stem.endswith("_CE") == (info.kind == "CE"):
         return existing[0].path.name
     return f"{info.sub}.csv" if info.kind == "MX" else f"{info.sub}_CE.csv"
 
@@ -103,7 +107,13 @@ def put(files: list[Path]) -> int:
             arch = ARCHIVE_DIR / stamp
             arch.mkdir(parents=True, exist_ok=True)
             shutil.move(str(old.path), arch / old.path.name)
-        shutil.copy2(i.path, dest)
+        if i.kind == "MX" and any("BU 열이 MX 뿐" in w for w in i.warnings):
+            # MX 인데 BU 열(값 MX 뿐)이 있으면 빼고 넣는다 — run.py 는 BU 열이 있으면 CE 로 돈다
+            df = sanitize_column_headers(_read(i.path))
+            df.drop(columns=[config.COL_BU]).to_csv(dest, index=False, encoding="utf-8-sig")
+            print("    (BU 열 뺌 — 값이 MX 뿐)")
+        else:
+            shutil.copy2(i.path, dest)
         moved += 1
         print(f"  → {i.slot:<10} {i.path.name}  ⇒  1_Input/{name}")
     if any(slots.get(i.slot) for i in best.values()):

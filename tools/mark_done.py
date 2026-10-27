@@ -194,10 +194,14 @@ def run(week: int, kind: str, base: Path | None, apply: bool, root: Path | None 
             return 0
         kind_dir = next(p for p in sources[0].origin.parents if p.name == kind)
         by_sub: dict[str, list] = {}
+        unread: set[Path] = set()            # GMO 데이터를 못 읽은 파일 — 안 쓴 게 아니라 모르는 것이므로 XXX 안 함
         for src in sources:
             df, src.sheet = read_source(src)
             if not df.empty:
                 by_sub.setdefault(src.sub, []).append((src, df))
+            else:
+                unread.add(src.origin)
+                print(f"  ⚠ {src.folder}/{src.label}: GMO 데이터를 못 읽음 — XXX 안 함, 원본 확인")
         cutoff, cleaned = {}, {}
         for sub, items in by_sub.items():
             merged, _ = merge_sub(items, kind)
@@ -211,7 +215,7 @@ def run(week: int, kind: str, base: Path | None, apply: bool, root: Path | None 
                 print(f"  ⚠ {sub}: 클렌징 결과(2_Output/cleaned_*)와 행이 안 맞음 — 클렌징본은 만들지 않고 표시만")
 
         # 클렌징본 · XXX — 실제 파일(zip 은 zip) 단위
-        makes, renames, used_top, unzips = [], [], {}, []
+        makes, renames, used_top, unzips, held_top = [], [], {}, [], set()
         by_origin: dict[Path, list] = {}
         for src in sources:
             by_origin.setdefault(src.origin, []).append(src)
@@ -219,6 +223,9 @@ def run(week: int, kind: str, base: Path | None, apply: bool, root: Path | None 
             top = next(p for p in [origin, *origin.parents] if p.parent == kind_dir)
             used = [s for s in srcs if s.taken]
             used_top[top] = used_top.get(top, False) or bool(used)
+            if origin in unread and not used:
+                held_top.add(top)                       # 못 읽은 파일이 든 폴더도 XXX 하지 않는다
+                continue
             if not used:
                 if not MARK_SKIP.search(origin.name):
                     renames.append((origin, origin.with_name(f"{origin.stem} XXX{origin.suffix}"), "안 씀"))
@@ -237,7 +244,7 @@ def run(week: int, kind: str, base: Path | None, apply: bool, root: Path | None 
         for top, used in sorted(used_top.items()):
             if used and not re.search(r"_[aA]$", top.name):
                 renames.append((top, top.with_name(top.name + "_A"), "폴더 — 씀"))
-            elif not used and not MARK_SKIP.search(top.name):
+            elif not used and top not in held_top and not MARK_SKIP.search(top.name):
                 renames.append((top, top.with_name(top.name + " XXX"), "폴더 — 안 씀"))
         unused_tops = {t for t, u in used_top.items() if not u}
         renames = [r for r in renames if not any(t in r[0].parents for t in unused_tops)]

@@ -85,15 +85,15 @@ flowchart TB
 
 | 단계 | 하는 일 | 코드 |
 |---|---|---|
-| 수집 | 법인 폴더마다 최신 파일(zip 은 풀어서), GMO 시트는 날짜가 가장 최근인 시트. 머리줄 별칭(`Div`→BU · `Mon`→Month · `Local`→Funding), 밀려 들어간 미디어 열은 행 단위로 바로잡음, 값 표준화(Sales Channel · Partner 의 Epp · app · web → `S.com`, Funding `HQ` → `GMO`, BU `HA` → `DA`). DCT · DCT Billing 폴더는 대상 아님 | `tools/collect.py` |
-| 넣기 | 열 이름으로 GMO 형식 확인, `BU` 열 있으면 CE, Subsidiary 최빈값 = 법인. 같은 자리(법인 + 구분)의 이전 파일은 `1_Input/_보관/<시각>/` | `tools/inputs.py` |
+| 수집 | 법인 폴더마다 최신 파일(zip 은 풀어서), GMO 시트는 날짜가 가장 최근인 시트. 수식 오류 칸(`#NAME?` 등)으로 못 읽으면 글자로 다시 읽음(2026-10-27 SEPR). 머리줄 별칭(`Div`→BU · `Mon`→Month · `Local`→Funding), 밀려 들어간 미디어 열은 행 단위로 바로잡음, 값 표준화(Sales Channel · Partner 의 Epp · app · web → `S.com`, Funding `HQ` → `GMO`, BU `HA` → `DA`). DCT · DCT Billing 폴더는 대상 아님 | `tools/collect.py` |
+| 넣기 | 열 이름으로 GMO 형식 확인, `BU` 열 있으면 CE — 단 BU 값이 MX · 빈 값뿐이면 MX 로 보고 BU 열을 빼고 넣음(run.py 가 BU 열 유무로 CE/MX 를 가르므로, 2026-10-27 W44 SEDA), Subsidiary 최빈값 = 법인. 같은 자리(법인 + 구분)의 이전 파일은 `1_Input/_보관/<시각>/` | `tools/inputs.py` |
 | 점검 | 매핑 엑셀 · 마스터 잠금, 형식 아닌 파일, 같은 자리 중복, 마스터보다 새 날짜가 있는지 | `tools/check.py` |
 | 매핑 자동 추론 | 매핑 키에 없는 값 중 법칙으로 확실한 것만 매핑 엑셀에 등록(§3) | `tools/auto_mapping.py` |
 | 클렌징 | 기존 그대로 (`run.py` → `src/`) + 캠페인 역추적(§4) + 미디어 표준표(§5) | `run.py` |
 | 마스터 갱신 | 법인별로 숫자(Spend · Revenue · Imp · Click · Order)가 **처음 달라진 날**부터 교체. 분류만 바뀌면 `--remap` | `src/updater.py` |
 | 매핑 제안 · 요약 | 원본에서 매핑 키에 없는 값(Spend 큰 순), 실행 직전 마스터와 비교한 법인별 변화 | `tools/mapping.py propose` · `tools/summary.py` |
 | 매핑 점검(경고만, 취합 때) | 기준 = 취합본(진짜 마스터). ④ 출시 주보다 4주 넘게 앞선 신제품 Spend ⑤ 이전 취합본과 숫자까지 같은 행을 짝지어 분류가 바뀐 것 — 전 → 후 분류 · 원본 입력값(이번 cleaned 파일) · 캠페인, 행 단위는 `매핑점검_<구분>_분류바뀜.csv` ⑥ 법인 · 주차별 Multi · Other 비중이 앞 8주보다 15%p↑ · $20K↑(캠페인명 상위 3개 첨부) → `Reports/매핑점검_<구분>.md`, 취합검증에 건수. 따로: `map_check.py CE [--old 이전취합본] [--all-weeks]` | `tools/map_check.py` |
-| 처리 표시(취합본 뒤 · GUI ③) | 국가별 weekly 폴더에 담당자 꼬리표: 값을 쓴 법인 폴더 `<법인 MMDD>_A`, 안 쓴 파일 · 폴더 `XXX`. **원본 유지 / 클렌징본** — 쓴 파일 옆에 `<이름> - 허겸수정(MMDD~)_a.xlsx` 복사본을 만들어 이번에 쓴 행의 분류 칸(미디어 · 제품 · Funding · BU · Month 등)을 클렌징 결과(`*_cleaned`)로 바꿈. 숫자 · 날짜 · 수식 칸은 원본 그대로, 행이 하나씩 안 맞으면 안 만듦. MMDD = 마스터가 바뀐 첫 날(updater 함수 그대로). collect 는 허겸수정본을 읽지 않음. 값을 쓴 zip 은 같은 폴더에 `<zip 이름>/` 으로 풀어 두고 클렌징본은 그 안 원본 옆에(다음 수집은 풀린 파일을 읽음 — 결과 같음) | `tools/mark_done.py` |
+| 처리 표시(취합본 뒤 · GUI ③) | 국가별 weekly 폴더에 담당자 꼬리표: 값을 쓴 법인 폴더 `<법인 MMDD>_A`, 안 쓴 파일 · 폴더 `XXX`(GMO 데이터를 못 읽은 파일은 XXX 하지 않고 ⚠ 만 — 원본 확인). **원본 유지 / 클렌징본** — 쓴 파일 옆에 `<이름> - 허겸수정(MMDD~)_a.xlsx` 복사본을 만들어 이번에 쓴 행의 분류 칸(미디어 · 제품 · Funding · BU · Month 등)을 클렌징 결과(`*_cleaned`)로 바꿈. 숫자 · 날짜 · 수식 칸은 원본 그대로, 행이 하나씩 안 맞으면 안 만듦. MMDD = 마스터가 바뀐 첫 날(updater 함수 그대로). collect 는 허겸수정본을 읽지 않음. 값을 쓴 zip 은 같은 폴더에 `<zip 이름>/` 으로 풀어 두고 클렌징본은 그 안 원본 옆에(다음 수집은 풀린 파일을 읽음 — 결과 같음) | `tools/mark_done.py` |
 | STATUS 기재(취합본 뒤 · GUI ③) | `4. Standard/★★GMO 백과사전` 'D2C MX/CE Status Check': 폴더 날짜의 ISO 주차 칸에 받은 날짜 `MM-DD`(빈 칸만, 손 값은 그대로, 없는 주차 칸은 '정리' 앞에 새로). '정리 · 취합'은 매주 최신화 — 다 지우고 이번 주 법인만 O. 서식: 매번 2026 주차 칸 전체 `mm-dd`(손 입력 일련번호 포함, 숨긴 열 때문에 열마다 지정). 저장 전 `2_Output/Backup/백과사전_<시각>.xlsx` | `tools/status_check.py` |
 
 결과: `2_Output/Reports/` — `실행요약.md` · `매핑등록.xlsx`(있을 때만) · `캠페인규칙제안.xlsx` · `취합검증_<구분>.md` · `Tracker_<구분>_W<nn>.html` · `메일_W<nn>.html`.
@@ -222,6 +222,7 @@ flowchart TD
 - 매핑 점수에 1.5(Type 1 만 일치) 단계(2026-10-23) — 모르는 Type 2 가 와도 원본 Type 1 을 지킨다(전엔 Google 이면 Paid Search / Text Ads 로 감)
 - 약어는 `3_Config/media_aliases.csv`(칸 · 별칭 · 정식 이름)로 먼저 푼다 — PMAX → Performance Max, FB · IG → Meta, TTD → The Trade Desk 등
 - 원본 값은 마스터 `Media Platform (Raw)` 에. 마스터 과거 행도 매 실행 같은 검사(`tools/master_media.py`)
+- SEDA 만: Platform 이 Others · 빈 값이면 `Media Platform_RAW (optional)` 값(Meta · Tiktok 등)으로 놓고 표 검사 — 표에 있는 조합만 남음(2026-10-27)
 
 ## 6. Collection status Tracker · 메일
 
@@ -265,6 +266,7 @@ sequenceDiagram
   못 찾으면 새 메일을 만들지 않고 건너뜀. 기본은 **초안**, Apps Script 스크립트 속성 `AUTO_SEND = true` 면 **바로 발송**. 같은 주 · 같은 법인(`W43-CE-SEI`)은 한 번만,
   기록은 `내 드라이브/GMO_메일초안/리마인드기록.txt`. 켜기 전에 `dryRun()` 로그의 '리마인드 → 스레드' 를 법인마다 확인. PCG 주간 메일은 늘 초안(보내기는 사람)
 - 리마인드 보류: `reminder_links.csv` `제외` = O 인 법인은 리마인드를 만들지 않는다(Tracker 표는 그대로). 지금 SESAR(미팅 조율 중, 2026-10-23)
+- 한국어 리마인드: `reminder_links.csv` `한국어 호칭` 칸이 있으면 본문을 한국어로("안녕하세요 <호칭>, 아티언스 허겸입니다. … 감사합니다. 허겸 드림", 제목은 영어 그대로). 지금 SEC → 이우주 프로님(2026-10-27)
 
 ## 7. 매핑 한 줄 등록 (Claude 에게 부탁하던 것)
 
@@ -306,6 +308,7 @@ python tools/mapping.py test MX --cat Smartphones --series "S26 Series" --value 
 | `python tools/mapping.py retire MX "S24 Series" "Other S Series"` | 세대가 밀린 시리즈를 Other 로(그 시리즈 행 전부, 백업 후). 과거 행까지는 다음 실행 `--remap` |
 | `python tools/campaign_rules.py propose / apply` | 캠페인 규칙 제안표 / O 표시한 것 규칙표에 넣기 |
 | `python tools/inputs.py` | 1_Input 현황 |
+| `python tools/media_plan_check.py` | 미디어 플랜 점검 — `02. GMO Consulting/05. Media plan Check list/<1Q~>/<법인>/*Media_Plan*.xlsx` 의 계획 매체(Media Type 1)에 최신 MX · CE 취합본 RAW 실적이 있는지(분기 단위, 월별은 참고 시트) → `Reports/미디어플랜점검.xlsx` · `.md`. '그 기간 실적 매체' 칸으로 다른 매체로 낸 경우 확인. 결과가 있으면 `weekly_mail.py` 가 ③ 섹션에 법인별 안내 메일 · PCG 요약을 만든다 |
 | `python run.py` | 예전 방식 그대로(클렌징만) |
 
 Python: `%USERPROFILE%\anaconda3\envs\workspace-py311\python.exe` (없으면 `py`).

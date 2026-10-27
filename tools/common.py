@@ -2,6 +2,8 @@
 
 입력 CSV 하나 = 슬롯 하나 = (법인, MX/CE). BU 열이 있으면 CE, 없으면 MX.
 run.py 의 분기(config.COL_BU 존재 여부)와 같은 기준이다.
+단, BU 값이 MX(또는 빈 값)뿐이면 MX — 1_Input 에 넣을 때 BU 열을 빼서 run.py 도 MX 로 돈다
+(W44 SEDA MX 원본에 BU=MX 열이 있어 CE 로 클렌징된 일, 2026-10-27).
 """
 from __future__ import annotations
 
@@ -63,6 +65,14 @@ def _first_col(df: pd.DataFrame, prefix: str) -> str | None:
     return next((c for c in df.columns if c.startswith(prefix)), None)
 
 
+def mx_only_bu(df: pd.DataFrame) -> bool:
+    """BU 열이 있는데 값이 MX · 빈 값뿐 = MX 파일(헤더는 정리된 상태로 받는다)."""
+    if config.COL_BU not in df.columns:
+        return False
+    v = df[config.COL_BU].fillna("").astype(str).str.strip().str.upper()
+    return bool(v.isin(["MX", ""]).all())
+
+
 def inspect_csv(path: Path) -> InputInfo:
     """CSV 내용으로 GMO 입력인지, 어느 법인 · MX/CE 인지, 기간 · 합계를 본다."""
     info = InputInfo(path=path)
@@ -86,7 +96,13 @@ def inspect_csv(path: Path) -> InputInfo:
     finally:
         logging.getLogger().setLevel(level)
     info.rows = len(dated)
-    info.kind = "CE" if config.COL_BU in df.columns else "MX"
+    info.kind = "CE" if config.COL_BU in df.columns and not mx_only_bu(df) else "MX"
+    if info.kind == "CE":
+        n_mx = int((df[config.COL_BU].fillna("").astype(str).str.strip().str.upper() == "MX").sum())
+        if n_mx:
+            info.warnings.append(f"CE 파일에 BU=MX {n_mx:,}행 섞임")
+    elif config.COL_BU in df.columns:
+        info.warnings.append("BU 열이 MX 뿐 → MX 로 보고, 넣을 때 BU 열을 뺌")
     if dated.empty:
         info.warnings.append(f"{config.MIN_DATE} 이후 날짜 없음")
         return info

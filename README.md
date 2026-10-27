@@ -308,6 +308,7 @@ python tools/mapping.py test MX --cat Smartphones --series "S26 Series" --value 
 | `python tools/mapping.py retire MX "S24 Series" "Other S Series"` | 세대가 밀린 시리즈를 Other 로(그 시리즈 행 전부, 백업 후). 과거 행까지는 다음 실행 `--remap` |
 | `python tools/campaign_rules.py propose / apply` | 캠페인 규칙 제안표 / O 표시한 것 규칙표에 넣기 |
 | `python tools/inputs.py` | 1_Input 현황 |
+| `python tools/prune_backups.py [--apply]` | 백업 정리 — `2_Output/Backup` 은 종류(이름에서 시각을 뺀 모양)마다 최신 1개, `1_Input/_보관` 은 최신 폴더 1개만. `run_all` 끝에 자동. 시각 없는 손 백업은 안 건드림 |
 | `python tools/media_plan_check.py` | 미디어 플랜 점검 — `02. GMO Consulting/05. Media plan Check list/<1Q~>/<법인>/*Media_Plan*.xlsx` 의 계획 매체(Media Type 1)에 최신 MX · CE 취합본 RAW 실적이 있는지(분기 단위, 월별은 참고 시트) → `Reports/미디어플랜점검.xlsx` · `.md`. '그 기간 실적 매체' 칸으로 다른 매체로 낸 경우 확인. 결과가 있으면 `weekly_mail.py` 가 ③ 섹션에 법인별 안내 메일 · PCG 요약을 만든다 |
 | `python run.py` | 예전 방식 그대로(클렌징만) |
 

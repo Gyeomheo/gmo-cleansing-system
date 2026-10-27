@@ -27,6 +27,7 @@ from campaign_rules import propose as propose_campaign
 from auto_mapping import run as auto_mapping
 from master_media import fix_masters
 from summary import inputs_markdown, write_summary
+from prune_backups import run as prune_backups
 
 
 def collect_week(week_arg: str, root: str | None = None) -> None:
@@ -94,6 +95,8 @@ def main(argv: list[str] | None = None) -> int:
     sheet = propose()
     camp_sheet = propose_campaign()
     write_summary(since, inputs_markdown(infos))
+    print()
+    prune_backups(apply=True)               # 백업은 종류마다 최신 1개만(요약이 직전 백업을 읽은 뒤)
     print(f"\n■ 끝 — {time.time() - t0:.0f}초.  결과: {config.OUTPUT_DIR}")
     print(f"  요약: {REPORT_DIR / '실행요약.md'}")
     if sheet:

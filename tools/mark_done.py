@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import argparse
+import glob
 import os
 import re
 import shutil
@@ -249,6 +250,15 @@ def run(week: int, kind: str, base: Path | None, apply: bool, root: Path | None 
         unused_tops = {t for t, u in used_top.items() if not u}
         renames = [r for r in renames if not any(t in r[0].parents for t in unused_tops)]
 
+        # 같은 원본의 클렌징본이 이미 있으면(MMDD 가 달라도) 건너뛴다 — 이미 처리한 주차를 다시 돌리면 비교 기준 마스터에
+        # 이번 데이터가 들어 있어 MMDD 가 파일 첫날로 바뀌고, 이름이 달라 하나 더 생기던 문제(W44 SIEL · SEPR 0101~, 2026-10-27)
+        def has_copy(out: Path, f: Path) -> bool:
+            folder = out.parent if out.parent.exists() else None
+            return bool(folder) and any(folder.rglob(f"{glob.escape(f.stem)} - 허겸수정(*~)_a{f.suffix}"))
+        kept = [(s, f, o) for s, f, o in makes if not has_copy(o, f)]
+        if len(kept) < len(makes):
+            print(f"  · 클렌징본이 이미 있어 건너뜀: {len(makes) - len(kept)}개 (다시 만들려면 기존 것을 지우고)")
+        makes = kept
         for z in unzips:
             print(f"  [압축 풀기] {z.relative_to(kind_dir)}\n        → {z.stem}/")
         for s, _, out in makes:

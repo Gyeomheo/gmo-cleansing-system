@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import threading
+import time
 import tkinter as tk
 import tkinter.font as tkfont
 import webbrowser
@@ -369,10 +370,13 @@ class App(tk.Tk):
         p = subprocess.Popen(cmd, cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              text=True, encoding="utf-8", errors="replace",
                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        t0 = time.time()
         for line in p.stdout:
             if "Could not determine dtype" not in line and " - INFO - " not in line:
                 self.q.put(("say", line, "bad" if ("✖" in line or "Traceback" in line) else ""))
-        return p.wait()
+        rc = p.wait()
+        self.q.put(("say", f"  ⏱ {time.time() - t0:.0f}초\n", "dim"))
+        return rc
 
     def step_clean(self) -> bool:
         self.status.set("① 수집 · 클렌징 중…")

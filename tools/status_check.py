@@ -196,9 +196,16 @@ def run(week: int, kind: str, apply: bool) -> int:
                     if consol:
                         ws.Cells(r, cc).Value = "O"
             wb.Save()
-            nums = [c for c in block if isinstance(c.Value2, float)]
-            odd = [c.Address for c in nums if c.NumberFormat != "mm-dd"]
-            print(f"  서식 확인: 2026 날짜 {len(nums)}칸 중 MM-DD 아닌 칸 {len(odd)}개" + (f" — {odd[:5]}" if odd else ""))
+            # 값은 한 번에 읽고, 서식은 열 단위로 — 칸마다 COM 으로 물으면 3분 걸림(2026-10-27)
+            vals, nums, odd = block.Value2, 0, []
+            for k, c in enumerate(range(p["w01"], j + p["shift"])):
+                rows = [i for i, row in enumerate(vals) if isinstance(row[k], float)]
+                nums += len(rows)
+                col = ws.Range(ws.Cells(FIRST_ROW, c), ws.Cells(p["last_row"], c))
+                if rows and col.NumberFormat != "mm-dd":                # 열에 서식이 섞였을 때만 칸별로
+                    odd += [ws.Cells(FIRST_ROW + i, c).Address for i in rows
+                            if ws.Cells(FIRST_ROW + i, c).NumberFormat != "mm-dd"]
+            print(f"  서식 확인: 2026 날짜 {nums}칸 중 MM-DD 아닌 칸 {len(odd)}개" + (f" — {odd[:5]}" if odd else ""))
         finally:
             wb.Close(False)
     finally:
